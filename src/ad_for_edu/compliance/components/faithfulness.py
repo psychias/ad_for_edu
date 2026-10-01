@@ -18,6 +18,9 @@ class FaithfulnessNLI(Component):
     """One minus the contradiction probability of (slide premise, description)."""
 
     category = "faithfulness"
+    # One minus a contradiction probability. A small reading is not a
+    # contradiction, so a shortfall alone does not name the rule.
+    shortfall_is_a_breach = False
     requires_models = True
 
     def __init__(self, models: LocalModels) -> None:

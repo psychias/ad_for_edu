@@ -23,6 +23,15 @@ class Component(ABC):
     #: True when the component needs a local model and is therefore absent from the
     #: mechanical mode.
     requires_models: ClassVar[bool] = False
+    #: Whether a score below 1 is in itself a breach of this component's rules.
+    #:
+    #: True where the component counts violations, so anything below full credit means
+    #: at least one was found. False where it returns a graded share of something a
+    #: good description does anyway: a description using a word the slide does not
+    #: carry scores below 1 on terminology without breaking the rule, and calling that
+    #: a breach would put a real reference writer at ninety-six per cent broken. For
+    #: those, a shortfall is reported as a shortfall and no rule is named.
+    shortfall_is_a_breach: ClassVar[bool] = True
 
     def __init_subclass__(cls, **kwargs: object) -> None:
         super().__init_subclass__(**kwargs)

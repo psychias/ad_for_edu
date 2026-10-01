@@ -13,6 +13,7 @@ from . import (  # noqa: F401
     media,
     moments,
     pairs,
+    suite,
     training,
 )
 
@@ -25,5 +26,6 @@ MODULES = (
     "training",
     "describe",
     "evaluate",
+    "suite",
     "agreement",
 )

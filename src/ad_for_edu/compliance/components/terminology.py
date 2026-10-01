@@ -18,6 +18,9 @@ class TerminologyGrounding(Component):
     """Share of content terms found in the slide text or on-screen summary."""
 
     category = "terminology"
+    # A graded share: a description that names something the slide does not spell
+    # out scores below 1 and has broken no rule. Only the share is reported.
+    shortfall_is_a_breach = False
 
     def __init__(self, term_cap: int = 40) -> None:
         self.term_cap = term_cap

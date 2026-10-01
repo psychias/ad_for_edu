@@ -25,8 +25,10 @@ EXPECTED = (
     "classify-moments",
     "describe",
     "detect-moments",
+    "diagnose",
     "draw-head-to-head",
     "draw-rating-pool",
+    "evaluate",
     "fit-preference-head",
     "generate-candidates",
     "generate-controlled-pairs",
@@ -54,6 +56,7 @@ EXPECTED = (
 PAID = (
     "annotate-rated-pairs",
     "classify-moments",
+    "evaluate",
     "generate-candidates",
     "generate-controlled-pairs",
     "generate-references",
@@ -126,6 +129,7 @@ def _required_for(name: str) -> list[str]:
         "build-pairs": ["--candidates", "c.jsonl"],
         "classify-moments": ["--events", "e.jsonl"],
         "describe": ["--moments", "m.jsonl", "--system", "slide_title"],
+        "diagnose": ["--predictions", "p.jsonl", "--moments", "m.jsonl"],
         "draw-head-to-head": ["--moments", "m.jsonl"],
         "draw-rating-pool": ["--pairs", "p.jsonl"],
         "fit-preference-head": [

@@ -15,7 +15,11 @@ the result against an explicit rule book rather than against a single opaque num
 
 It contains code and configuration only. No recording, frame, transcript or rating is in
 here: the corpus stays where it is licensed to be, and the commands read it from a data
-directory or from a dataset on the Hugging Face Hub.
+directory or from a dataset on the Hugging Face Hub. The published sets are
+`Psychias/AD4Edu-SFT` for the reference descriptions and training examples,
+`Psychias/AD4Edu-Preferences` for the pairs and the four hundred rated by people, and
+`Psychias/AD4Edu-keyframes` for the frames. Which set a command reads comes from the
+environment and has no default, so nothing is fetched that was not asked for.
 
 ## What it does
 
@@ -56,6 +60,49 @@ The metric has three modes, reported apart and never mixed:
 Beside it the repository computes overlap with references, image–text alignment, win rates
 between two systems, per-category defect localisation, and how far each metric agrees with
 the people who rated pairs by hand.
+
+### What the metric is, and what it is not
+
+**It is a metric: it ranks systems.** A score is the mean over a system's whole output,
+and it puts a slide-title readout last and the trained systems above it. The novelty term
+is part of that definition, so the metric has one form and the settings file requires it.
+
+**The mechanical mode is also a diagnostic: it names the rule.** Run on one description it
+says which rules that description broke, by rule identifier. `ad-for-edu diagnose` prints
+that per rule, with the number of descriptions each rule applies to beside it, because a
+rule broken on three of four figures is a different finding from three of four hundred
+descriptions.
+
+A breach and a low score are reported apart. Three of the six components count violations,
+so anything below full credit means one was found. The other three return a graded share of
+something a good description does anyway: a description that names what the slide does not
+spell out scores below one on terminology and has broken no rule. Merging the two would put
+a real reference writer at ninety-six per cent broken, so the diagnostic keeps them in
+separate columns.
+
+**A description is scored in the company of the rest.** The six components read one
+description at a time, and the novelty term reads it against what the same system already
+said in that lecture, scaling it by how much it adds. A system that reads the slide text
+aloud at every moment is therefore scored on the repetition as well as on each line, and
+lands near the bottom of the table. The term is also the only check on the two rules
+against re-describing visual content an earlier description already covered, so those
+rules are answered wherever a system is scored.
+
+**Compliance is not quality.** A description can keep all 45 rules and still be the wrong
+thing to say. Three consequences the repository holds to:
+
+- it is not a checkpoint-selection criterion, and nothing here selects by it;
+- a system trained to maximise these components must not then be scored by them, because
+  the column would report how well it optimised its own objective rather than how good its
+  descriptions are;
+- the modes are reported apart and never averaged, and a mode that does not score a
+  category abstains rather than scoring zero.
+
+Where the standard and the implementation disagree, the repository states it rather than
+smoothing it over. The standard routes fourteen rules as mechanically checkable; seven of
+them are scored by the two components that need a learned model, so they are reachable only
+in the local mode, and two have no check here at all. `ad-for-edu diagnose` names all three
+groups.
 
 ## Installing
 
@@ -121,7 +168,23 @@ ad-for-edu score-systems --predictions work/evaluation/predictions_*.jsonl \
                          --metrics chrf compliance:mechanical compliance:local
 ```
 
-`ad-for-edu --help` lists all thirty commands; each takes `--help` of its own.
+Or the whole evaluation in one invocation, which runs every table the inputs allow and
+writes one directory:
+
+```bash
+ad-for-edu evaluate --predictions work/evaluation/predictions_*.jsonl \
+                    --moments moments.jsonl \
+                    --pairs pairs.jsonl --scores scores.jsonl \
+                    --labels r1.jsonl r2.jsonl r3.jsonl r4.jsonl \
+                    --offline
+```
+
+It reports, per stage, whether it ran and what it wrote, and names the input any stage it
+skipped was missing, so a half-filled directory cannot be mistaken for a finished
+evaluation. Drop `--offline` to include the stages that call a judge; it then totals them
+into one estimate and stops until `--approve-spend` is given.
+
+`ad-for-edu --help` lists all thirty-two commands; each takes `--help` of its own.
 
 ### Nothing is charged without being asked
 

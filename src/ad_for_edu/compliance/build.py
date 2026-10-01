@@ -17,6 +17,7 @@ from ..core.strategy import StrategySpec
 from . import components as _components  # noqa: F401  (registers the components)
 from .components.base import COMPONENTS
 from .models import ENCODER, INFERENCE, HuggingFaceModels, LocalModels
+from .rules import RuleMap
 from .scorer import ComplianceScorer
 from .sequence import SEQUENCE_FACTORS, SequenceFactor
 from .tiers import Tier, tier_named
@@ -38,7 +39,9 @@ class ComplianceSettings:
 def load_compliance_settings(path: str | Path | None = None) -> ComplianceSettings:
     source = Path(path) if path else config_dir() / SETTINGS_FILE
     raw = load_yaml(source)
-    check_keys(raw, _TOP_LEVEL, required=("modes",), where=source.name)
+    check_keys(
+        raw, _TOP_LEVEL, required=("modes", "sequence_factor"), where=source.name
+    )
     modes = {
         name: Tier.from_settings(name, entry or {}) for name, entry in (raw["modes"] or {}).items()
     }
@@ -47,9 +50,17 @@ def load_compliance_settings(path: str | Path | None = None) -> ComplianceSettin
     models = raw.get("models") or {}
     check_keys(models, ("encoder", "inference", "offline"), where=f"{source.name}:models")
     factor = raw.get("sequence_factor")
+    if not factor:
+        # Required, not defaulted. A compliance score is defined to include the
+        # sequence factor, so settings that omit it describe a different quantity and
+        # are refused rather than quietly scoring without it.
+        raise SettingsError(
+            f"{source.name}: sequence_factor is required. A compliance score includes it "
+            "by definition, so there is no setting of this file that leaves it out."
+        )
     return ComplianceSettings(
         modes=modes,
-        sequence_factor=StrategySpec.parse(factor) if factor else None,
+        sequence_factor=StrategySpec.parse(factor),
         models=models,
         kappa_sweep=tuple(float(value) for value in raw.get("kappa_sweep") or ()),
     )
@@ -68,8 +79,14 @@ def build_scorer(
     settings: ComplianceSettings | None = None,
     *,
     models: LocalModels | None = None,
+    name_rules: bool = True,
 ) -> ComplianceScorer:
-    """The scorer of one mode. `models` replaces the local models, for tests."""
+    """The scorer of one mode. `models` replaces the local models, for tests.
+
+    `name_rules` reads the rule table so that a failing component can say which rule
+    it broke. It is on by default, because a score that cannot be attributed is the
+    thing this metric exists to avoid.
+    """
     settings = settings or load_compliance_settings()
     tier = tier_named(mode, settings.modes)
     if tier.paid:
@@ -86,18 +103,25 @@ def build_scorer(
                 shared = build_models(settings)
             params["models"] = shared
         built.append(COMPONENTS.create(spec.name, **params))
-    return ComplianceScorer(tier, built)
+    return ComplianceScorer(tier, built, RuleMap.load() if name_rules else None)
 
 
 def build_sequence_factor(
     settings: ComplianceSettings | None = None,
     *,
     knee: float | None = None,
-) -> SequenceFactor | None:
-    """The sequence factor of the settings file; `knee` overrides its knee."""
+) -> SequenceFactor:
+    """The sequence factor of the settings file; `knee` overrides its knee.
+
+    Always returns one. The settings loader requires the factor, so there is no path
+    through this function that yields a scorer without it.
+    """
     settings = settings or load_compliance_settings()
     if settings.sequence_factor is None:
-        return None
+        raise SettingsError(
+            "the compliance settings carry no sequence factor; a compliance score "
+            "includes it by definition"
+        )
     params = dict(settings.sequence_factor.params)
     if knee is not None:
         params["knee"] = knee

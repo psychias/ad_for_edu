@@ -32,6 +32,9 @@ class NonRedundancyEmbedding(Component):
     """Graded credit for low similarity between description and transcript window."""
 
     category = "non_redundancy"
+    # Graded credit from similarity to what was just said. Some overlap is
+    # unavoidable, so a shortfall alone does not name the rule.
+    shortfall_is_a_breach = False
     requires_models = True
 
     def __init__(self, models: LocalModels, knee: float = 0.17) -> None:

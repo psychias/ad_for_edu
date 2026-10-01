@@ -45,7 +45,18 @@ modes:
       references. Paid; run by the rubric judging command.
     paid: true
 
-# Applied to a system's predictions, never to a single pair.
+# The within-lecture novelty term. It is required: a settings file without it is
+# refused, because a compliance score is defined to include it.
+#
+# It scales a description by how much it adds to what the same system already said in
+# that lecture, and it is the only check on the two rules against re-describing visual
+# content an earlier description already covered. The knee is the calibrated 0.4: a
+# description sharing at most 0.6 of its tokens with every earlier one keeps its full
+# component mean.
+#
+# Applied to a system's sequence of descriptions, never to a single pair: whether a
+# description repeats an earlier one is a property of the sequence, and the two sides
+# of a pair come from different systems.
 sequence_factor:
   name: novelty_knee
   params: {knee: 0.4}
