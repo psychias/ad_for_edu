@@ -1,0 +1,83 @@
+# Token shapes: how many tokens one call of a stage sends and receives.
+#
+# The shape given for a stage is assumed for any model without a measurement.
+# Under "measured" are the shapes observed on real calls of one model at that
+# stage. Payloads differ between stages, so a shape never carries over from one
+# stage to another: replace an assumed shape by a measured one, from a small
+# pilot, before a large run.
+#
+# Reasoning tokens are billed as output. A clip may be read by a model without
+# being reported as input tokens, so the bill of a stage that sends clips can be
+# higher than its shape says.
+
+stages:
+  classify_moments:
+    input_tokens: 34300
+    output_tokens: 774
+    note: 10 candidates and 30 to 38 images per call, low reasoning effort
+    measured:
+      gemini-3.1-pro: {input_tokens: 34300, output_tokens: 774}
+      gemini-3.1-pro-or: {input_tokens: 34300, output_tokens: 774}
+
+  generate_references:
+    input_tokens: 13338
+    output_tokens: 700
+    note: 1 moment, 3 to 5 images, the shared prefix, low reasoning effort
+    measured:
+      gemini-3.1-pro: {input_tokens: 14543, output_tokens: 831}
+      gemini-3.1-pro-or: {input_tokens: 14543, output_tokens: 831}
+      gpt-5.5: {input_tokens: 11844, output_tokens: 373}
+      claude-sonnet-4.6: {input_tokens: 13527, output_tokens: 554}
+      qwen3-vl-235b: {input_tokens: 11800, output_tokens: 214}
+
+  generate_candidates:
+    input_tokens: 4931
+    output_tokens: 953
+    note: 1 moment, 3 to 5 images, 1 or 5 candidates, low reasoning effort
+    measured:
+      gemini-3.1-pro: {input_tokens: 5929, output_tokens: 1416}
+      gemini-3.1-pro-or: {input_tokens: 5929, output_tokens: 1416}
+
+  generate_controlled_pairs:
+    input_tokens: 4955
+    output_tokens: 705
+    note: 1 moment, 3 to 5 images, two descriptions and what differs
+    measured:
+      gemini-3.1-pro: {input_tokens: 5770, output_tokens: 812}
+      gemini-3.1-pro-or: {input_tokens: 5770, output_tokens: 812}
+
+  judge_pairs:
+    input_tokens: 6890
+    output_tokens: 800
+    note: 1 moment, one 16 s clip, two descriptions, one answer
+    measured:
+      gemini-3.1-pro: {input_tokens: 1506, output_tokens: 751}
+      gemini-3.1-pro-or: {input_tokens: 1506, output_tokens: 751}
+
+  rate_against_references:
+    input_tokens: 350
+    output_tokens: 8
+    note: a reference and a candidate, one integer
+    measured:
+      gpt-5.5: {input_tokens: 230, output_tokens: 180}
+      gpt-3.5-turbo: {input_tokens: 159, output_tokens: 1}
+
+  score_rubric:
+    input_tokens: 1600
+    output_tokens: 900
+    note: the standard, the context, the references and a candidate; seven lines
+
+  judge_rules:
+    input_tokens: 1400
+    output_tokens: 40
+    note: one rule prompt with the context of a moment, pass or fail
+
+  judge_head_to_head:
+    input_tokens: 500
+    output_tokens: 8
+    note: two descriptions and the text context, one answer
+
+  annotate_rated_pairs:
+    input_tokens: 1800
+    output_tokens: 600
+    note: the context, a slide still and two descriptions, one answer

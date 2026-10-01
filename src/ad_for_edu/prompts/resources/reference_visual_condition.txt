@@ -1,0 +1,59 @@
+MOMENT
+- type: {type}
+- transcript_window (-5 s, forward to the next pedagogical event or +45 s, whichever comes first; word timestamps): {transcript_window}
+- slide_ocr: {slide_ocr}
+- pause_after: {pause_after} s
+- reachable_rung: {reachable_rung}          # computed in code; do not recompute
+- described_so_far (this lecture): {described_so_far}
+- keyframes: [3-5 attached]
+
+TASK
+
+Step 1 — coverage. From the transcript window and keyframes alone:
+  coverage = FULLY_COVERED if the lecturer's words in the window already name or convey the
+             visual content of this moment. Put the covering span in covering_quote, verbatim.
+  coverage = PARTLY_COVERED if some but not all is spoken. State what is left in
+             uncovered_content.
+  coverage = UNCOVERED if the visual carries content the window does not convey. State it in
+             uncovered_content.
+  An unresolved deictic — the lecturer says "this" or "here" and the window never names the
+  referent — is UNCOVERED.
+
+Step 1b — visual content (visual_content_001, slide_text_003). From the keyframes:
+  content = VISUAL if a non-text element is on screen (figure, diagram, chart, table, equation,
+            code, image, animation) or the lecturer's cursor, laser or hand indicates a specific
+            element. Name that element in visual_referent. Then set unspoken_form to the ONE
+            property of it that the window does not convey and a listener needs to follow the
+            point — which_element, shape_trend, spatial_arrangement, relative_magnitude, count,
+            value, colour_code — or null if the speech already conveys its form. Hearing the
+            concept is not hearing the form; the slide existing does not make it describable.
+  content = TEXT_ONLY if the slide surface carries only text (title, bullets, prose). Text has no
+            form to describe; a paraphrase of it is not audio description.
+  content = NONE if nothing on screen carries content (blank, transition frame, webcam only).
+  visual_referent and unspoken_form are null unless content == VISUAL.
+
+Step 2 — emit. emit=true ONLY if coverage != FULLY_COVERED and either
+  (a) content == VISUAL and unspoken_form is not null, or
+  (b) content == TEXT_ONLY and coverage == UNCOVERED — then Step 3 writes at most one
+      orientation line naming the slide's topic (slide_text_003), never a paraphrase of the
+      bullets, and only if the topic has not been given already.
+Otherwise emit=false. If your confidence in what is on screen is genuinely low, emit=false.
+
+Step 3 — if emit=true, write the AD for exactly the uncovered content, at the word budget for
+reachable_rung: rung 1 -> whatever fits the pause, default 25 words; rung 2 -> max 15;
+rung 3 -> up to 25, or up to 60 only for a complex multi-element visual that is UNCOVERED;
+rung 4 -> max 5. Put the rung in the `rung` field only — no marker in the AD text.
+
+Step 4 — rationale: one sentence citing the driving rule IDs.
+
+Output ONLY this JSON, no preamble, no fences:
+{{"coverage": "FULLY_COVERED"|"PARTLY_COVERED"|"UNCOVERED",
+ "covering_quote": <string or null>,
+ "uncovered_content": <string or null>,
+ "content": "NONE"|"TEXT_ONLY"|"VISUAL",
+ "visual_referent": <string or null>,
+ "unspoken_form": "which_element"|"shape_trend"|"spatial_arrangement"|"relative_magnitude"|"count"|"value"|"colour_code"|null,
+ "emit": <bool>,
+ "ad_text": <string or null>,
+ "rung": <1-4 or null>,
+ "rationale": <string>}}

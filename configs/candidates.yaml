@@ -1,0 +1,17 @@
+# Asking for several descriptions of one moment, to pair against each other.
+
+model: gemini-3.1-pro-or
+
+# "verbalized_sampling" asks for several descriptions in one call, which is how the
+# published pairs were made; "per_call" asks once per description.
+mode: verbalized_sampling
+
+# What a description should attend to. Five directives are defined and one is enabled
+# here, because a description written under one directive is comparable with another
+# under the same directive by a different writer, and not with one under another.
+directives: [REFERENT]
+
+# Above zero, so the descriptions of one call differ from one another.
+temperature: 0.7
+max_tokens: 2000
+reasoning_effort: low

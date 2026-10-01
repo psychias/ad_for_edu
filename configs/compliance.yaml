@@ -1,0 +1,59 @@
+# The rule-compliance metric.
+#
+#   score(a, m) = mean over the components that apply to m  x  min(1, novelty(a) / knee)
+#
+# A mode is a list of components, one per scored rule category. A category a mode
+# does not score is listed under "abstains", so that leaving it out is a stated
+# property of the mode and not an omission.
+
+modes:
+  mechanical:
+    description: >-
+      Style, terminology, length and deixis, checked by rules alone.
+      Faithfulness and non-redundancy are not scored.
+    abstains: [faithfulness, non_redundancy]
+    components:
+      - name: style_properties
+        params: {cost_per_property: 0.5}
+      - name: terminology_grounding
+        params: {term_cap: 40}
+      - name: length_budget_ratio
+        params: {words_per_minute: 140.0, lag_cap_seconds: 20.0}
+      - name: deixis_resolution
+        params: {window: 6, premise_term_cap: 60}
+
+  local:
+    description: >-
+      All six categories. Faithfulness by a local inference model,
+      non-redundancy by a local sentence encoder.
+    components:
+      - name: style_properties
+        params: {cost_per_property: 0.5}
+      - name: terminology_grounding
+        params: {term_cap: 40}
+      - name: length_budget_ratio
+        params: {words_per_minute: 140.0, lag_cap_seconds: 20.0}
+      - name: deixis_resolution
+        params: {window: 6, premise_term_cap: 60}
+      - name: faithfulness_nli
+      - name: non_redundancy_embedding
+        params: {knee: 0.17}
+
+  rubric:
+    description: >-
+      A hosted judge grades the six categories against the rule book and the
+      references. Paid; run by the rubric judging command.
+    paid: true
+
+# Applied to a system's predictions, never to a single pair.
+sequence_factor:
+  name: novelty_knee
+  params: {knee: 0.4}
+
+# The knees at which the stability of the system ranking is reported.
+kappa_sweep: [0.2, 0.3, 0.4, 0.5, 0.6]
+
+models:
+  encoder: sentence-transformers/all-MiniLM-L6-v2
+  inference: cross-encoder/nli-deberta-v3-base
+  offline: true

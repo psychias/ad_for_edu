@@ -1,0 +1,42 @@
+# Asking several writers for a reference description of every moment.
+#
+# Every writer answers every moment. A moment of the test side carries every writer
+# or it is left out of the scored set: the best value over four references and the
+# best over three are different quantities, and they differ by a different amount
+# than the spread between the writers does.
+
+# The way of asking. "fixed_window" reads a stated stretch of speech either side of
+# the moment; "next_event_window" lets the stretch run to the next event, since a
+# lecturer may name what is on screen well after it appears; "visual_condition"
+# additionally asks whether the visual carries a form a description could convey.
+prompt: next_event_window
+
+# The writers, and the order their rows are written in. Four lineages, because what
+# the set needs is describers that differ, not describers that are expensive.
+writers:
+  - gemini-3.1-pro-or
+  - gpt-5.5
+  - claude-sonnet-4.6
+  - qwen3-vl-235b
+
+# Above zero, so the writers of one moment do not all produce the same sentence.
+temperature: 0.2
+max_tokens: 2000
+reasoning_effort: low
+
+# The stills the writer sees, and the words it reads.
+still_policy:
+  name: keyframe_window
+  params: {before: 2.0, after: 5.0, count: 5}
+
+transcript_window:
+  name: next_event
+  params: {before: 5.0, cap: 45.0}
+
+# How the words a description may have are decided from the gap after the moment.
+rung_policy:
+  name: uniform_budget
+  params: {words: 25}
+
+# How many of the most recently described elements the prompt carries.
+described_window: 40

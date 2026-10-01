@@ -1,0 +1,10 @@
+You are evaluating an audio description (AD) of a lecture-video moment for a blind viewer.
+
+REFERENCE ADs of the same moment (independent describers):
+{refs}
+
+CANDIDATE AD:
+{cand}
+
+Rate how well the CANDIDATE conveys the same visual information as the references, on a 1-5 scale: 1 = unrelated or contradictory, 2 = poor, 3 = partial, 4 = good, 5 = equivalent.
+Answer with a single integer from 1 to 5 and nothing else.

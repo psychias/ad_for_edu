@@ -1,0 +1,51 @@
+# Credentials
+.env
+.env.local
+*.key
+*.token
+
+# Lecture material and everything derived from it. Recordings, frames, transcripts
+# and clips are covered by the licences of their sources and never belong in a commit.
+/data/
+/work/
+*.mp4
+*.mkv
+*.webm
+*.mov
+*.wav
+*.mp3
+*.jpg
+*.jpeg
+*.png
+*.parquet
+**/keyframes/
+**/clips/
+**/transcripts/
+**/ocr/
+**/vad/
+**/audio/
+
+# Run outputs
+/runs/
+/outputs/
+/tables/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

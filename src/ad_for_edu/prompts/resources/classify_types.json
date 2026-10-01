@@ -1,0 +1,34 @@
+{
+ "types": {
+  "slide": "slide       a new slide replaces the previous one",
+  "transition": "transition  an animated change between slide states",
+  "reveal": "reveal      an increment appears on the existing slide (build step, bullet, overlay)",
+  "pointing": "pointing    the cursor, laser or highlight comes to rest on, dwells on, or traces a\n              specific on-slide element",
+  "ink": "ink         handwritten annotation is drawn on the slide",
+  "figure": "figure      a diagram, image or illustration first appears",
+  "chart": "chart       a plot or graph first appears",
+  "table": "table       a table first appears",
+  "math": "math        typeset mathematics first appears",
+  "code": "code        a code block first appears",
+  "animation": "animation   embedded animated content plays (video, 3D model, simulation)",
+  "other": "other       a change on the slide surface fitting none of the above",
+  "reject": "reject      not a change on the slide surface, or an artifact"
+ },
+ "order": [
+  "slide",
+  "transition",
+  "reveal",
+  "pointing",
+  "ink",
+  "figure",
+  "chart",
+  "table",
+  "math",
+  "code",
+  "animation",
+  "other",
+  "reject"
+ ],
+ "pointing_note": "Classify `pointing` only where the cursor comes to rest, dwells, or traces. Cursor transit\nacross the screen is not pointing. ",
+ "reject_note": "Reject: webcam-thumbnail movement, slide numbers, footers,\ntemplate chrome, compression artifacts, and returns to a slide already shown with no new\ncontent (mark those `slide` with revisit=true)."
+}

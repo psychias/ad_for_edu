@@ -1,0 +1,18 @@
+# Learning to prefer one answer of a pair, starting from a supervised describer.
+#
+# The learning rate is twenty times smaller than the supervised one: the supervised
+# rate here trains a describer that fits its pairs and has learned nothing about
+# preference, and nothing fails while it happens.
+
+epochs: 2
+learning_rate: 1.5e-5
+warmup_steps: 20
+save_every: 50
+
+method:
+  # How far the describer may move from the one it started from.
+  beta: 0.1
+  # Alongside the preference objective, a term that keeps the preferred answer
+  # likely. Without it the describer can raise the preferred answer's odds by
+  # lowering both.
+  rpo_alpha: 0.1

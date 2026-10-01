@@ -1,0 +1,4 @@
+# The describer is given no picture. The summary of what is on screen stands in for
+# it, so that "with pictures against without" is not confounded with "with pictures
+# against with nothing".
+carries_images: false

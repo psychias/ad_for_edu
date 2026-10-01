@@ -1,0 +1,27 @@
+# The cells of the experiment.
+#
+# Every backbone is trained in both input arms and under both methods, at each
+# seed. A table reports the mean over the seeds a row actually has, and says how
+# many that is: a row at one seed and a row at three are not the same measurement.
+
+backbones:
+  - smolvlm2-2.2b
+  - qwen3-vl-2b
+  - qwen3-vl-4b
+  - qwen3-vl-8b
+  - internvl3.5-4b
+  - internvl3.5-8b
+  - gemma-3-4b
+
+arms: [multimodal, text_only]
+methods: [sft, dpo]
+seeds: [0, 1, 2]
+
+# What is held out of what a cell trains on.
+development:
+  # For the supervised arm, by moment: the examples of one moment are several
+  # writers' answers to it.
+  sft: {share: 0.10, seed: 17, by: moment}
+  # For the preference arm, by lecture: pairs of one lecture share slides and
+  # phrasing.
+  dpo: {share: 0.12, seed: 17, by: lecture}

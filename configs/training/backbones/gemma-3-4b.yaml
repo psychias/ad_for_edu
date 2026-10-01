@@ -1,0 +1,10 @@
+# google/gemma-3-4b-it
+name: gemma-3-4b
+model_id: google/gemma-3-4b-it
+# Pinned. A run against a name whose contents moved is a different experiment.
+revision: "093f9f388b31de276ce2de164bdc2081324b9767"
+license: gemma
+
+settings:
+  batch_size: 2
+  gradient_accumulation: 4

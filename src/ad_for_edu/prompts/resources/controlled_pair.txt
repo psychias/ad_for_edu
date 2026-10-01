@@ -1,0 +1,32 @@
+Produce TWO audio descriptions of this moment that are EQUALLY FAITHFUL to the keyframes and
+state IDENTICAL FACTS, and that differ ONLY in the property named below. Everything else —
+content selected, facts stated, word count — must match as closely as possible.
+
+MOMENT
+- type: {type}
+- transcript_window (-5 s / +8 s, word timestamps): {transcript_window}
+- slide_ocr: {slide_ocr}
+- pause_after: {pause_after} s
+- reachable_rung: {reachable_rung}
+- described_so_far (this lecture): {described_so_far}
+- keyframes: [3-5 attached]
+
+AXIS: {axis}
+  style          A follows the style specification; B uses forbidden meta-language
+                 ("the slide shows", "we can see") while stating the same facts.
+  terminology    A uses the on-slide term exactly as written; B substitutes a different term
+                 that is also on the slide, making the reference wrong.
+  length         A fits the reachable rung's budget; B overruns it substantially while adding
+                 no information.
+  deixis         A names the referent; B narrates the pointing act ("the cursor moves to...")
+                 without naming what is pointed at.
+  faithfulness   A states only what the keyframes support; B adds one specific detail the
+                 keyframes do not support.
+  non_redundancy A states only what the transcript window leaves uncovered; B restates content
+                 the window already conveys.
+
+A is the compliant side, B the defective side. Keep |words(A) - words(B)| <= 3 except on the
+length axis, where the difference is the manipulation.
+
+Output ONLY: {{"axis": "{axis}", "a": <string>, "b": <string>,
+              "what_differs": "<one sentence>"}}

@@ -1,0 +1,22 @@
+# Ordering the pairs whose direction is not known by construction.
+#
+# The judge watches a clip of the moment, because what tells the two descriptions
+# apart is often movement: a pointer coming to rest, a build appearing. A single
+# still cannot carry that.
+#
+# Every pair is judged in both presentation orders and the two answers are combined.
+
+model: gemini-3.1-pro-or
+
+# The clip: short, small and silent, since it is uploaded on every call.
+clip_seconds: 16.0
+clip_width: 640
+clip_frames_per_second: 2
+
+temperature: 0.0
+max_tokens: 1200
+
+# "agree_or_undecided" requires both orders to name the same side, and leaves the
+# pair unordered otherwise: a judge that answers differently each way round has
+# stated a preference for a position, not for a description.
+combination: agree_or_undecided

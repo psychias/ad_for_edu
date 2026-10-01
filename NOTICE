@@ -1,0 +1,8 @@
+ad_for_edu
+
+This product bundles a rule book for audio description of lecture recordings
+(src/ad_for_edu/standard/resources/rules_for_slides.yaml). Several rules quote or
+paraphrase short passages from published accessibility guidelines. Each quotation
+is attributed in the rule's "citation" field, and the quoted text remains the
+property of its publisher. The licence of this repository covers the rule book's
+own wording, structure and annotations, and does not extend to the quoted passages.

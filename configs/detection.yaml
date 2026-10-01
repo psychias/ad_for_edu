@@ -1,0 +1,28 @@
+# Proposing the candidate events of a lecture.
+#
+# The frame channels are asked in the order listed and the first that matches names
+# the candidate, so the order runs from the most specific signal to the least.
+# Nothing here calls a model or decodes the recording.
+
+frame_channels:
+  # Most of the slide text has changed: a new slide.
+  - name: slide_turnover
+    params: {overlap_below: 0.55}
+  # Words have appeared: a build, a bullet, an overlay. Two or fewer added words is
+  # the disagreement of the text reader with itself, not an addition to the slide.
+  - name: added_words
+    params: {at_least: 3}
+  # The picture changed while the text did not: a pointer, ink, an animation.
+  - name: pixel_motion
+    params: {difference_at_least: 0.06, signature_size: 64}
+
+# The stretches without speech that no visual event claimed.
+gap_channel: speech_gap
+
+# The shortest stretch of silence a description could be spoken into.
+minimum_gap: 1.5
+# How far after a visual event to look for such a stretch.
+gap_horizon: 12.0
+# The interval at which keyframes are taken while nothing changes. A pair of
+# keyframes that far apart was produced by the interval, not by a change.
+heartbeat_seconds: 30.0

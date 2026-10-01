@@ -1,0 +1,18 @@
+You are judging two candidate audio descriptions (AD) of the same lecture moment for a blind
+learner, against the operative AD standard (describe only what speech omits; faithful to the
+slide; concise enough for the pause; no meta-language).
+
+MOMENT
+- Type: {type}
+- Lecturer said (±8s): {transcript_window}
+- On-screen text (OCR): {slide_ocr}
+- Pause available: {pause_after}s
+
+DESCRIPTION 1:
+{ad1}
+
+DESCRIPTION 2:
+{ad2}
+
+Which description better serves the blind learner at this moment?
+Answer with exactly one token: "1", "2", or "TIE".

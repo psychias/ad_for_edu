@@ -1,0 +1,33 @@
+# Preparing a lecture for the pipeline.
+#
+# The transcript is the only step that calls a service. The other three run on
+# this machine and cost nothing.
+
+transcriber:
+  name: hosted_whisper
+  params:
+    model: whisper-1
+    language: en
+    # The audio is sent in stretches of this length and the times are put back on
+    # the clock of the lecture.
+    chunk_seconds: 600
+    attempts: 5
+
+gap_detector:
+  name: silero
+  params:
+    # A shorter gap carries no description.
+    minimum_gap: 0.5
+
+slide_text_reader:
+  name: easyocr
+  params:
+    languages: [en]
+    use_gpu: false
+
+keyframes:
+  # A keyframe every half minute, besides the scene changes: a slide can change
+  # too little to register as a scene change.
+  grid_seconds: 30
+  minimum_keyframe_gap: 1.0
+  scene_threshold: 0.3

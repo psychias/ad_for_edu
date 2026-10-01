@@ -1,0 +1,10 @@
+# Qwen/Qwen3-VL-8B-Instruct
+name: qwen3-vl-8b
+model_id: Qwen/Qwen3-VL-8B-Instruct
+# Pinned. A run against a name whose contents moved is a different experiment.
+revision: "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b"
+license: apache-2.0
+
+settings:
+  batch_size: 1
+  gradient_accumulation: 8

@@ -1,0 +1,39 @@
+# Deciding what each candidate event is, or rejecting it.
+#
+# The classifier does not see the rule book: it says what an event is, not whether
+# it deserves a description.
+
+model: gemini-3.1-pro
+# Candidates per call. A batch never spans two lectures, because the label set is
+# bound per batch and depends on the lecture.
+batch_size: 10
+temperature: 0.0
+# Reasoning can be bounded but not switched off, and it is billed as output.
+reasoning_effort: low
+# The limit covers the reasoning and the answer together, so a batch whose
+# reasoning runs long has its answer cut short unless the limit is generous.
+max_tokens: 8000
+attempts: 3
+
+# The stills of a moment the classifier sees.
+still_policy:
+  name: event_window
+  params:
+    narrow_count: 3
+    wide_count: 5
+    wide_above_seconds: 3.0
+    minimum_back: 2.0
+    maximum_back: 20.0
+    minimum_span: 6.0
+    trail_seconds: 2.0
+    trail_fraction: 0.45
+
+# The words the classifier is shown around the candidate.
+transcript_window:
+  name: symmetric
+  params: {seconds: 8.0}
+
+still_width: 960
+# The font the time is burned into the stills with. ffmpeg crashes rather than
+# choosing another font where it can find no font configuration, so name one.
+font_file: null

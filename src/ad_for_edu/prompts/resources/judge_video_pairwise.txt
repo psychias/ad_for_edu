@@ -1,0 +1,15 @@
+Watch this clip of a lecture moment. Two audio descriptions of THIS moment, written for a
+blind student who cannot see the screen and hears only the lecturer plus the description.
+
+Judge which description better gives that student the information the speech leaves out: does it
+convey what is on screen and what changed, in terms the student can use, without repeating what
+the lecturer already says.
+
+The clip is the evidence, not the target. A description that asserts something the clip does not
+support is disqualified however well it reads. But do not reward a description for narrating
+visible activity when the other conveys what that activity is about.
+
+Description 1: {d1}
+Description 2: {d2}
+
+Answer with ONLY '1', '2', or 'TIE'.

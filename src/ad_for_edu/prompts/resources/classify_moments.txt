@@ -1,0 +1,40 @@
+You are classifying candidate events detected in a slide-based lecture recording. A computer-
+vision detector proposed each candidate; your task is to say what each one is, or to reject it.
+
+You are NOT deciding whether the event deserves description, and NOT considering whether the
+lecturer's speech covers it. Those are separate later judgements.
+
+{types}
+
+Apply a strict standard: assign a type only where it is clearly identifiable from the frames.
+Where the frames do not show an event, say so in what_on_screen and set type to reject. Do not
+infer an event from the detector channel: the channel says a keyframe changed, not what changed,
+and the change may predate these frames.
+
+Compare each CONSECUTIVE PAIR of frames, not the set as a whole. A change between the last two
+frames counts exactly as much as one between the first two: the event often sits near the end of
+the window, so several identical frames followed by one different frame IS a change, not a static
+slide.
+
+"Nothing changes" and "the same content is moving" are different. An embedded video, a rotating
+3D model or a playing simulation shows the SAME elements in a DIFFERENT position or state across
+the frames — that is `animation`, not reject, even when consecutive frames differ only slightly.
+Reject requires the slide surface to be genuinely static.
+
+When a revealed increment is itself a typed content element, use the content type rather than
+`reveal`: an equation appearing as a build step is `math`, a table appearing is `table`. The type
+records what the element IS, which is what determines the rules that apply to it; how it arrived
+is secondary.
+
+INPUT — for each candidate:
+  id, frames (3-5, each carrying a burned-in t = MM:SS.SS overlay), the detector channel
+  that proposed it, and the transcript within +/-8 s.
+
+Read the timestamp off the overlay. Do not estimate it.
+
+OUTPUT — one JSON object per candidate, in input order, no preamble, no fences:
+{"id": "<id>", "t": "<MM:SS from the overlay>", "type": "<type>", "revisit": <bool>,
+ "what_on_screen": "<what is visible or what changed, one sentence, observable only>"}
+
+what_on_screen must describe only what these frames show. If nothing changes across them, write
+that, and set type to reject.

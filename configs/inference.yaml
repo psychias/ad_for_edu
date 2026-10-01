@@ -1,0 +1,24 @@
+# Asking a describer for a description of every moment of the evaluation set.
+#
+# Every system answers every moment, whether or not it would have chosen to. A
+# system scored only on the moments it chose is scored on an easier set than one
+# scored on all of them, and the two numbers are not comparable.
+
+# The ways of asking, tried in order until one yields a description. The first is
+# the same answer every time; the others draw from their own seeds, so a second
+# attempt is a different continuation and the run stays reproducible.
+attempts:
+  - name: greedy
+    params: {maximum_new_tokens: 160}
+  - name: sampled
+    params: {temperature: 0.7, top_p: 0.9, maximum_new_tokens: 256, attempt: 1}
+  - name: sampled
+    params: {temperature: 0.7, top_p: 0.9, maximum_new_tokens: 256, attempt: 2}
+
+# The ways of reading a reply, tried in order. The last recovers the description
+# from a reply cut off in the middle of it.
+salvage: [strict_object, balanced_object, open_string]
+
+# Which adapter of a run is asked. "final" is the adapter a run ends with; "best"
+# is the checkpoint that scored best on what was held out.
+checkpoint: final

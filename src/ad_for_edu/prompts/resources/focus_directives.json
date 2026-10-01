@@ -1,0 +1,7 @@
+{
+ "REFERENT": "name the specific element the speech leaves unresolved (the pointed, highlighted or newly salient item) and its on-slide identity or role. Say 'the cursor' or 'the lecturer', never he/she.",
+ "STRUCTURE": "type-and-purpose in one sentence, then main components in reading order (figure_001/002/004), levels 1-2 only.",
+ "CHANGE": "only the delta this moment adds relative to the previous slide state (rule 18). Never re-read accumulated content.",
+ "DATA": "the quantitative content: trend, key values, or the equation with a one-line ClearSpeak gloss (rules 23-31).",
+ "SPATIAL": "where the uncovered elements sit and how they relate positionally. Content-bearing layout only, no styling (rules 20-21)."
+}

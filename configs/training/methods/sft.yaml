@@ -1,0 +1,6 @@
+# Learning to produce the reference answer for each moment.
+
+epochs: 3
+learning_rate: 1.0e-4
+warmup_steps: 50
+save_every: 100

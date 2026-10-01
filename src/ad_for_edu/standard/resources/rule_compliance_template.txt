@@ -1,0 +1,32 @@
+You are evaluating whether an audio description (AD) example for a lecture moment satisfies a specific rule from the operative AD standard.
+
+## The rule
+
+rule_id: {rule_id}
+section: {section}   |   element: {element}   |   type: {rule_type}
+
+{rule_body}
+
+Grounding / basis (verbatim from the standard):
+{grounding}
+
+## Context
+
+Lecture moment:
+- Type: {type}
+- Visible on slide: {what_on_screen}
+- Lecturer said (±8s window): {transcript_window}
+- Redundant: {redundant}
+- Pointing clear: {pointing_clear}
+- Emit decision: {emit}
+
+## The AD to evaluate
+
+{ad_text}
+
+## Your task
+
+This rule has been pre-determined to apply to this moment. Evaluate whether the AD satisfies it.
+
+Output ONLY this JSON (no preamble, no markdown fences):
+{"verdict": "PASS" | "FAIL", "reasoning": "<one sentence>"}

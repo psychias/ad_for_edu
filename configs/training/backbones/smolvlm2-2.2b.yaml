@@ -1,0 +1,14 @@
+# HuggingFaceTB/SmolVLM2-2.2B-Instruct
+name: smolvlm2-2.2b
+model_id: HuggingFaceTB/SmolVLM2-2.2B-Instruct
+# Pinned. A run against a name whose contents moved is a different experiment.
+revision: "482adb537c021c86670beed01cd58990d01e72e4"
+license: apache-2.0
+
+settings:
+  batch_size: 2
+  gradient_accumulation: 4
+
+arms:
+  multimodal:
+    processor_image_kwargs: {do_image_splitting: false}

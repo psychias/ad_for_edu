@@ -1,0 +1,14 @@
+# OpenGVLab/InternVL3_5-4B-HF
+name: internvl3.5-4b
+model_id: OpenGVLab/InternVL3_5-4B-HF
+# Pinned. A run against a name whose contents moved is a different experiment.
+revision: "6bd4487402110ef9889ba50eb7aefeb302526fed"
+license: apache-2.0
+
+settings:
+  batch_size: 2
+  gradient_accumulation: 4
+
+arms:
+  multimodal:
+    processor_image_kwargs: {crop_to_patches: false}

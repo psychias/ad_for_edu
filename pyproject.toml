@@ -1,0 +1,88 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ad-for-edu"
+version = "0.1.0"
+description = "Audio description for slide-based lecture recordings: moment detection, reference writing, preference pairs, training and evaluation."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+dependencies = [
+    "pyyaml>=6.0",
+    "numpy>=1.26",
+    "scipy>=1.11",
+]
+
+[project.optional-dependencies]
+preprocessing = [
+    "opencv-python>=4.8",
+    "pillow>=10.0",
+    "easyocr>=1.7",
+    "silero-vad>=5.1",
+    "openai>=1.40",
+]
+llm = [
+    "google-genai>=1.0",
+    "openai>=1.40",
+]
+metrics = [
+    "sacrebleu>=2.4",
+    "bert-score>=0.3.13",
+    "sentence-transformers>=3.0",
+    "torch>=2.6",
+    "transformers>=4.49",
+    "pillow>=10.0",
+]
+train = [
+    "torch>=2.6",
+    "transformers>=4.49",
+    "peft>=0.14",
+    "trl>=0.15",
+    "accelerate>=1.2",
+    "datasets>=3.0",
+    "pillow>=10.0",
+]
+data = [
+    "huggingface_hub>=0.26",
+    "datasets>=3.0",
+    "pyarrow>=15.0",
+]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.5",
+    # Two of the lighter optional dependencies, because the tests exercise the code
+    # that uses them: the overlap metric needs a chrF implementation, and the channel
+    # that watches for movement needs to read an image. Both are small and fast; the
+    # tests that load a model are marked "models" and are deselected instead.
+    "sacrebleu>=2.4",
+    "pillow>=10.0",
+]
+
+[project.scripts]
+ad-for-edu = "ad_for_edu.cli.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+ad_for_edu = [
+    "standard/resources/*.yaml",
+    "standard/resources/*.csv",
+    "standard/resources/rule_templates/*.txt",
+    "prompts/resources/*.txt",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "models: loads a local model; deselect with -m 'not models'",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

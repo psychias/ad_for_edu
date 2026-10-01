@@ -1,0 +1,38 @@
+# Turning candidate descriptions into pairs, and drawing sets of pairs.
+
+pairing:
+  # Pairs one moment may supply.
+  maximum_per_moment: 4
+  # How far apart two descriptions must be, on a scale of 0 to 100. Two descriptions
+  # closer than this are not a choice.
+  minimum_distance: 12.0
+  # How often one description may appear among the pairs of its moment, so the pairs
+  # spread over the descriptions rather than radiating from one.
+  maximum_per_description: 2
+  seed: 5
+
+# The set of pairs people rate.
+rated_pool:
+  per_kind:
+    controlled: 250
+    natural_decided: 100
+    natural_flip: 50
+  # The category about resolving what is pointed at carries more, because it is the
+  # one the standard turns on and the fewest moments can supply it.
+  per_category:
+    deixis: 50
+  category_default: 40
+  # Pairs one moment may supply. Pairs of one moment share a clip, a stretch of
+  # speech and a reference, so they are not independent observations.
+  maximum_per_moment: 2
+  seed: 13
+
+# The set of moments two systems are compared on head to head.
+head_to_head:
+  moments: 150
+  seed: 17
+
+# Held out of the pairs a system is trained on, by lecture.
+development:
+  share: 0.12
+  seed: 17

@@ -1,0 +1,13 @@
+# Pairs built to differ on exactly one rule category.
+#
+# The side named below is the one that keeps the rule; the other breaks it. The
+# direction of such a pair therefore needs no judge.
+
+model: gemini-3.1-pro-or
+axes: [style, terminology, length, deixis, faithfulness, non_redundancy]
+temperature: 0.3
+max_tokens: 1500
+
+# Moments to draw per category.
+per_axis: 40
+compliant_side: a

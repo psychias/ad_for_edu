@@ -1,0 +1,25 @@
+The operative standard for audio description of slide-based lectures:
+
+{standard}
+
+---
+MOMENT CONTEXT (what a sighted viewer has):
+What is on screen: {on_screen}
+Slide text (OCR): {ocr}
+Spoken (transcript window): {transcript}
+
+REFERENCE ADs of this moment (independent describers):
+{refs}
+
+CANDIDATE AD:
+{cand}
+
+Grade the CANDIDATE against the standard and the references. Reply with EXACTLY seven lines:
+style: <1-5>
+terminology: <1-5>
+length: <1-5>
+deixis: <1-5>
+faithfulness: <1-5>
+non_redundancy: <1-5>
+overall: <1-10>
+No other text.

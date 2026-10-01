@@ -1,0 +1,28 @@
+# Settings shared by every training cell. A method or a backbone overrides only
+# what differs, and an unknown key at any layer stops the run.
+
+epochs: 3
+learning_rate: 1.0e-4
+batch_size: 1
+gradient_accumulation: 8
+max_sequence_length: 4096
+precision: bf16
+
+# A fixed number of warm-up steps, not a share of them: a share turns into a
+# different schedule whenever the batch changes.
+warmup_steps: 50
+maximum_gradient_norm: 1.0
+weight_decay: 0.0
+
+# Checkpoints are taken every so many optimiser steps rather than once an epoch,
+# because a curve of how a cell improves needs points between the epochs.
+save_every: 100
+evaluate_every: 100
+log_every: 10
+keep_checkpoints: 20
+
+lora:
+  rank: 16
+  alpha: 32
+  dropout: 0.05
+  targets: [q_proj, k_proj, v_proj, o_proj]

@@ -1,0 +1,875 @@
+version: 1.6
+date: 2026-06-14
+scope: "Operative rule set for automated audio description of screencast-style slide-based lecture recordings."
+
+rules:
+
+  - id: cross_cutting_001
+    section: "1.1"
+    element: all
+    type: cross_cutting
+    tag: DOC
+    rule: "REDUNDANCY GATE (governs every 'describe' rule in §2): describe on-screen content only to the extent the lecturer's speech does not already convey it. The element rules in §2 specify HOW to describe a figure/table/chart/equation/etc.; this rule decides WHETHER to, and how much — always only the gap the voice leaves. When the lecturer's words already carry the content, suppress entirely. This is a system for covering what speech omits, not for reading the screen aloud."
+    max_seconds: null
+    citation: "WCAG 2.2 Understanding 1.2.5 · https://www.w3.org/WAI/WCAG22/Understanding/audio-description-prerecorded.html"
+    citation_extra:
+      - "Mayer 2009 redundancy principle (SECONDARY) · https://sites.google.com/site/cognitivetheorymmlearning/redundancy-principle"
+      - "DCMP Description Key §7 · https://dcmp.org/learn/618-description-key---what-to-describe"
+    open_question: null
+    scoring:
+      route: mechanical
+      checks: [nonredundancy_now]
+      basis: doc
+      unscored_reason: null
+  - id: cross_cutting_002
+    section: "1.2"
+    element: all
+    type: cross_cutting
+    tag: DOC
+    rule: "Use present tense, active voice, third-person narration. Refer to the pointer as the cursor or pointer, or to the person as the lecturer; never a gendered pronoun (he/she) -- the listener cannot see who is speaking."
+    max_seconds: null
+    citation: "DCMP Description Key §8 · https://dcmp.org/learn/617-description-key---how-to-describe"
+    citation_extra:
+      - "VideoA11y G3 · https://arxiv.org/html/2502.20480"
+      - "Netflix v2.5 · https://partnerhelp.netflixstudios.com/hc/en-us/articles/215510667-Audio-Description-Style-Guide-v2-5"
+    open_question: null
+    scoring:
+      route: mechanical
+      checks: [style_meta, style_pronoun, style_v2]
+      basis: doc
+      unscored_reason: null
+  - id: cross_cutting_003
+    section: "1.3"
+    element: all
+    type: cross_cutting
+    tag: DOC
+    rule: "Describe observable visual content; do not infer emotions, intent, or significance."
+    max_seconds: null
+    citation: "DCMP Description Key §7 · https://dcmp.org/learn/618-description-key---what-to-describe"
+    citation_extra:
+      - "DCMP §8 · https://dcmp.org/learn/617-description-key---how-to-describe"
+      - "VideoA11y G41 · https://arxiv.org/html/2502.20480"
+    open_question: null
+    scoring:
+      route: judge
+      checks: []
+      basis: doc
+      unscored_reason: null
+  - id: cross_cutting_004
+    section: "1.5"
+    element: all
+    type: cross_cutting
+    tag: DOC
+    rule: "Use consistent terminology within a lecture and across a course; adopt the lecturer's wording when terms are introduced."
+    max_seconds: null
+    citation: "DCMP Description Key §7 · https://dcmp.org/learn/618-description-key---what-to-describe"
+    citation_extra:
+      - "VideoA11y G22 · https://arxiv.org/html/2502.20480"
+    open_question: null
+    scoring:
+      route: mechanical
+      checks: [term_grounding]
+      basis: doc
+      unscored_reason: null
+  - id: cross_cutting_005
+    section: "1.8"
+    element: all
+    type: uncertainty
+    tag: DOC
+    rule: "When the AD system's confidence in what is on screen is low, prefer silence over a confident wrong description. A BLV student cannot verify a description; a wrong one is worse than silence."
+    max_seconds: null
+    citation: "Describe Now · https://arxiv.org/html/2411.11835v2 (S15.7)"
+    open_question: null
+    bucket: literature_now
+    validation: source_citation
+    scoring:
+      route: mechanical
+      checks: [faithfulness_nli]
+      basis: doc
+      unscored_reason: null
+  - id: cross_cutting_006
+    section: "1.10"
+    element: all
+    type: cross_cutting
+    tag: DOC
+    rule: "Do not re-describe visual content already described earlier in the same lecture. After first describing an element (a diagram, a definition, a figure), subsequent appearances within the same lecture get either a name-only reference or silence, not a full re-description."
+    max_seconds: null
+    citation: "WCAG 2.2 Understanding 1.2.5 · https://www.w3.org/WAI/WCAG22/Understanding/audio-description-prerecorded.html (S5.5)"
+    citation_extra:
+      - "Mayer 2009 redundancy principle (SECONDARY) · https://sites.google.com/site/cognitivetheorymmlearning/redundancy-principle (S12.1)"
+      - "Sweller/Chandler split-attention effect (SECONDARY) · https://sites.google.com/site/cognitivetheorymmlearning/redundancy-principle (S12.5) — motivating rationale for consistent naming / no re-description, not proof for BLV lecture listeners (was cognitive_006)"
+      - "Holsanova, Blomberg, Blomberg, Gardenfors & Johansson (2023), JAT 6(1):64-92 · https://doi.org/10.47476/jat.v6i1.2023.245 — AD at event boundaries is sensitive to spatiotemporal (time/location) circumstances; event-segmentation is an active AD-research area (film-AD; only an indirect analogy to lecture-scale re-description)"
+    open_question: null
+    bucket: literature_now
+    validation: source_citation
+    scoring:
+      route: unscored
+      checks: []
+      basis: doc
+      unscored_reason: no_context_signal
+  - id: cross_cutting_007
+    section: "1.10"
+    element: all
+    type: cross_cutting
+    tag: PROV
+    basis: design-hypothesis
+    rule: "Lookahead redundancy (extends the redundancy gate cross_cutting_001 across time): suppress a description if the lecturer covers the same content shortly AFTER the visual event, not only simultaneously. OFFLINE dataset generation: look ahead over the transcript and suppress the description if the lecturer verbalizes the content within a window LOCKED to: before the next pedagogical event, or 45 seconds, whichever comes first. LIVE deployment: hold a non-urgent description for a brief grace window; if the lecturer begins covering it within the window, suppress, otherwise describe. Prevents the AD from pre-empting an explanation the lecturer is about to give (the covered-later case for reveals, equations, tables, figures)."
+    max_seconds: null
+    citation: null
+    bucket: design_decision
+    scoring:
+      route: mechanical
+      checks: [nonredundancy_ahead]
+      basis: blv_confirmed
+      unscored_reason: null
+    blv_review:
+      build: 6424ab12
+      rules_sha: "42804e05d3ea"
+      rules_version_reviewed: "1.1"
+      question: "Is this rule right?"
+      n_raters: 1
+      verdicts:
+        - rater: R1
+          verdict: correct
+          note: null
+  - id: cross_cutting_008
+    section: "1.11"
+    element: all
+    type: cross_cutting
+    tag: DOC
+    rule: "Describing the lecturer's gestures and board drawings — and resolving the deixis attached to them — is a core (not peripheral) lecture-AD task. The WCAG 1.2.7 physics-lecture example is the canonical case: a professor sketches rapidly on a whiteboard while gesturing and pauses are insufficient — the case proving gap-insertion alone fails. In a live system this is handled by the fallback ladder (length_003), not by pausing (WCAG 1.2.7 extended AD is prerecorded-only). The per-element machinery lives in §2.Deixis (rules deixis_001..006); this rule frames it as a first-class concern of lecture AD."
+    max_seconds: null
+    citation: "WCAG 2.2 Understanding 1.2.7 — extended AD physics-lecture example · https://www.w3.org/WAI/WCAG22/Understanding/extended-audio-description-prerecorded.html (S5.6)"
+    open_question: null
+    bucket: literature_now
+    validation: source_citation
+    scoring:
+      route: unscored
+      checks: []
+      basis: doc
+      unscored_reason: scope_statement
+
+  - id: length_001
+    section: "3.1"
+    element: all
+    type: length
+    tag: DOC
+    rule: "Gap-insertion is the base delivery mechanism: insert AD into existing pauses in the lecturer's speech."
+    max_seconds: null
+    citation: "WCAG 2.2 SC 1.2.5 · https://www.w3.org/TR/WCAG22/"
+    open_question: null
+    scoring:
+      route: unscored
+      checks: []
+      basis: doc
+      unscored_reason: delivery_mechanism
+  - id: length_002
+    section: "3.2"
+    element: all
+    type: length
+    tag: PROV
+    basis: design-hypothesis
+    rule: "Live mode prioritization: deixis-resolution > slide-text gist > figure summary > full figure."
+    max_seconds: null
+    citation: null
+    open_question: "OQ-Length-2 — RESOLVED: live priority LOCKED (deixis-resolution > slide-text gist > figure summary > full figure), implementing the deixis-first scheme. Basis: deixis primacy + drill-down (NCAM S4.G.4)."
+    bucket: design_decision
+    scoring:
+      route: judge
+      checks: []
+      basis: blv_unresolved
+      unscored_reason: null
+    blv_review:
+      build: 6424ab12
+      rules_sha: "42804e05d3ea"
+      rules_version_reviewed: "1.1"
+      question: "Is this rule right?"
+      n_raters: 1
+      verdicts:
+        - rater: R1
+          verdict: cannot_tell
+          note: "i need a concrete example."
+  - id: length_003
+    section: "3.2"
+    element: all
+    type: length
+    tag: PROV
+    basis: design-hypothesis
+    rule: "Live fallback ladder (the live replacement for extended AD, which is unavailable because the live stream cannot be paused for the room). The BLV listener's audio is a per-user track, so it may run behind the live feed without affecting anyone else. When a describable visual cannot be conveyed in the available speech gap, descend until one rung succeeds: (1) full description if it fits the gap; (2) compressed description if a shorter gap fits; (3) time-shift — let the listener's track fall behind the live feed to deliver the full description, then catch up during the next pause (or by briefly faster playback), up to a maximum lag cap L (team-chosen, default ~20s); (4) honest placeholder naming what is on screen without faking coverage (e.g. 'equation on screen, long derivation in progress') when time-shift cannot keep up — lag would exceed L, or no upcoming pause exists to catch up in; (5) drop, only as a last resort. Collision-losers (two events competing for one gap) are out of scope for this standard. This ladder is the live replacement for every former per-element 'default to extended AD' instruction (figures, typeset math, ink writing, handwritten derivations). Tables and code keep their own element-specific compression and reference this ladder only for overflow."
+    max_seconds: null
+    citation: null
+    open_question: "OQ-Length-6 :: lock ladder: time-shift committed; lag cap L=20s; catch-up pause-first then brief faster playback; placeholder wording as written. Basis: per-user track may lag without affecting the room (rule rationale); 20s ~ relevance/working-memory window [cite: length_005 rationale + §4 CLT]."
+    bucket: design_decision
+    scoring:
+      route: mechanical
+      checks: [rung_reachable]
+      basis: blv_confirmed
+      unscored_reason: null
+    blv_review:
+      build: 6424ab12
+      rules_sha: "42804e05d3ea"
+      rules_version_reviewed: "1.1"
+      question: "Is this rule right?"
+      n_raters: 1
+      verdicts:
+        - rater: R1
+          verdict: correct
+          note: null
+  - id: length_004
+    section: "3.3"
+    element: all
+    type: length
+    tag: DOC
+    rule: "Concise insertion default = 25 words; detailed override = 100 words."
+    max_seconds: 10
+    citation: "Describe Now · https://arxiv.org/html/2411.11835v2"
+    citation_extra:
+      - "Pavel, Reyes & Bigham (2020), Rescribe, UIST · arXiv:2010.03667 — auto-edits description length to fit gaps; residual: educational-content comprehension preservation untested"
+    open_question: null
+    scoring:
+      route: mechanical
+      checks: [length_budget]
+      basis: doc
+      unscored_reason: null
+  - id: length_005
+    section: "3.4"
+    element: all
+    type: length
+    tag: PROV
+    basis: transfer-from
+    rule: "Avoid continuous description; leave silence on most lecturer-narrated stretches."
+    max_seconds: null
+    citation: null
+    open_question: "OQ-Length-4 : avoid continuous description; silence on most narrated stretches (DCMP S1.H.8). "
+    bucket: needs_data
+    validation: based_on_the_annotated_data
+    scoring:
+      route: unscored
+      checks: []
+      basis: blv_confirmed
+      unscored_reason: suppress_only
+    blv_review:
+      build: 6424ab12
+      rules_sha: "42804e05d3ea"
+      rules_version_reviewed: "1.1"
+      question: "Is this rule right?"
+      n_raters: 1
+      verdicts:
+        - rater: R1
+          verdict: correct
+          note: null
+
+  - id: visual_content_001
+    section: "1.8"
+    element: cross_cutting
+    type: cross_cutting
+    tag: PROV
+    basis: operationalization-of
+    rule: "VISUAL-CONTENT CONDITION (the second gate beside the redundancy gate): describe a moment only when a visual referent's FORM is needed to follow the lecturer's point and is not conveyed by speech. Form means one of: which element is meant, the shape or trend of a curve, the spatial arrangement of parts, relative magnitude, a count, a value read off the figure, or a colour code. The concept being spoken does not make the visual redundant; the slide existing does not make it describable; text has no form to describe. A moment with no visual referent, or whose form is already spoken, is not described."
+    max_seconds: null
+    citation: "Peng, Jang, Bigham & Pavel 2021, Say It All (CHI) — element-level coverage: image elements need description unless speech covers them, text elements are covered by being read · https://doi.org/10.1145/3411764.3445572"
+    open_question: "OQ-VisualContent-1 :: added 2026-08-27 (v1.2) after the 60-item audit: 24 of 37 slide-type items flagged as having no pedagogically rich moment; the v1.1 standard had only a redundancy condition. Validated against the second-marker and the 40-item verdict check before it filters any rater item."
+    bucket: needs_data
+    validation: pending_second_marker_and_40_item_check
+    scoring:
+      route: unscored
+      checks: []
+      basis: audit_validated
+      unscored_reason: decision_side
+  - id: slide_text_003
+    section: "2.SlideText"
+    element: slide_text
+    type: dont_describe
+    tag: PROV
+    basis: corollary-of
+    rule: "On a slide whose only content is text (title, bullets, prose), the AD is at most one orientation line naming the slide's topic, given once when the slide first appears; never a paraphrase or summary of the bullets. If the lecturer reads or paraphrases the text, say nothing (slide_text_002)."
+    max_seconds: null
+    citation: "DCMP Description Key — What to Describe: on-screen text read by the speaker is not described · https://dcmp.org/learn/descriptionkey/617"
+    open_question: "OQ-SlideText-3 :: added 2026-08-27 (v1.2). The observed failure: both sides of a pair paraphrasing the bullets of a text-only slide the lecturer was reading ('A slide notes each muscle is served by at least one motor nerve …')."
+    bucket: needs_data
+    validation: pending_second_marker_and_40_item_check
+    scoring:
+      route: penalty
+      checks: [slide_copy_verbatim]
+      basis: audit_validated
+      unscored_reason: null
+  - id: pair_perceptibility_001
+    section: "1.9"
+    element: cross_cutting
+    type: cross_cutting
+    tag: PROV
+    basis: design-hypothesis
+    rule: "A constructed defect in a preference pair must be perceptible to a listener: checkable against the speech, the named visual referent, or a stated form property. A perturbation of a slide-text token on a text-only moment (e.g. 'ten-fiber' inserted into a bullet paraphrase) is imperceptible by design and the pair is uninformative. Length defects must be audible overruns (the longer side at least 8 words and 1.4x the shorter, and over the rung budget), not marginal ones."
+    max_seconds: null
+    citation: null
+    open_question: "OQ-Perceptibility-1 :: added 2026-08-27 (v1.2); operationalised per axis in analysis/pair_perceptibility.py. On the 60 rated items, pairs with |dwords| < 2.5 were flagged 25/44 against 0/16 above."
+    bucket: needs_data
+    validation: pending_second_marker_and_40_item_check
+    scoring:
+      route: unscored
+      checks: []
+      basis: audit_validated
+      unscored_reason: pair_level
+
+  - id: slide_text_001
+    section: "2.SlideText"
+    element: slide_text
+    type: describe
+    tag: DOC
+    rule: "Read on-screen text central to comprehension that is not already conveyed by the lecturer's speech. This covers the slide title and any individual body item: surface only the specific uncovered item, gated by cross_cutting_001 — never read the slide top-to-bottom."
+    max_seconds: 10
+    citation: "W3C MAUR §1.8 · https://www.w3.org/TR/media-accessibility-reqs/"
+    citation_extra:
+      - "VideoA11y G30 · https://arxiv.org/html/2502.20480"
+      - "Netflix v2.5 · https://partnerhelp.netflixstudios.com/hc/en-us/articles/215510667-Audio-Description-Style-Guide-v2-5"
+    open_question: null
+    scoring:
+      route: judge
+      checks: []
+      basis: doc
+      unscored_reason: null
+  - id: slide_text_002
+    section: "2.SlideText"
+    element: slide_text
+    type: dont_describe
+    tag: DOC
+    rule: "Do not read aloud slide text the lecturer is reading aloud (redundancy)."
+    max_seconds: null
+    citation: "WCAG 2.2 Understanding 1.2.5 · https://www.w3.org/WAI/WCAG22/Understanding/audio-description-prerecorded.html"
+    open_question: null
+    scoring:
+      route: penalty
+      checks: [slide_copy_verbatim]
+      basis: doc
+      unscored_reason: null
+
+  - id: slide_transition_001
+    section: "2.Transitions"
+    element: slide_transitions
+    type: dont_describe
+    tag: PROV
+    basis: transfer-from
+    rule: "Do not describe transition animations (dissolves, wipes, slide-in)."
+    max_seconds: null
+    citation: null
+    open_question: "OQ-Transitions-2 : do not describe transition animations (styling-suppression S4.B.3).  "
+    bucket: needs_data
+    validation: based_on_the_annotated_data
+    scoring:
+      route: mechanical
+      checks: [transition_effect]
+      basis: blv_confirmed
+      unscored_reason: null
+    blv_review:
+      build: 6424ab12
+      rules_sha: "42804e05d3ea"
+      rules_version_reviewed: "1.1"
+      question: "Is this rule right?"
+      n_raters: 1
+      verdicts:
+        - rater: R1
+          verdict: correct
+          note: null
+
+  - id: slide_animation_001
+    section: "2.Reveals"
+    element: slide_animations
+    type: dont_describe
+    tag: PROV
+    basis: transfer-from
+    rule: "Do not describe animation effects (fly-in, fade-up)."
+    max_seconds: null
+    citation: "BY ANALOGY (not direct): NCAM Bar Charts S4.B.3 · https://www.wgbh.org/foundation/services/ncam/tools-resources/effective-practices-for-description-of-science-content-bar-charts — 'It is not necessary to describe the visual attributes of the bars … unless there is an explicit need'. NCAM addresses bar colour only and does not mention animation effects."
+    bucket: literature_now
+    validation: source_citation
+    scoring:
+      route: judge
+      checks: []
+      basis: by_analogy
+      unscored_reason: null
+  - id: slide_animation_002
+    section: "Reveals.001"
+    element: slide_animations
+    type: how
+    tag: PROV
+    basis: corollary-of
+    rule: "Apply the redundancy gate to each revealed increment independently: when a build adds a bullet, equation step, or chart series, describe only the delta the new step adds, and only if speech leaves it uncovered — never re-read the accumulated slide state. Stepwise typeset-equation builds follow the same delta convention; chart build animations are described as the completed data state, not frame by frame."
+    max_seconds: 7
+    citation: "COROLLARY (not direct): WCAG 2.2 Understanding 1.2.5 redundancy · https://www.w3.org/WAI/WCAG22/Understanding/audio-description-prerecorded.html — the redundancy principle applied per increment; WCAG does not address slide builds."
+    rationale: "Coverage gap: per-increment gating of slide builds. Slides-only lectures lean heavily on progressive builds; the slide-animation rules gate reveals as whole events but do not state that the gate and the delta convention apply per increment of multi-step equation and chart builds."
+    interaction: "Each increment is gated by cross_cutting_001 and sized to the 5-10 s insertion budget; increments that do not fit descend the fallback ladder (length_005) rather than accumulate."
+    bucket: literature_now
+    validation: source_citation
+    open_question: null
+    scoring:
+      route: judge
+      checks: []
+      basis: by_analogy
+      unscored_reason: null
+
+  - id: figure_001
+    section: "2.Figures"
+    element: figures
+    type: describe
+    tag: DOC
+    rule: "Drill down: brief summary first; then main components; then details only if a gap remains. Describe only the part the lecturer's speech does not already convey (redundancy gate, cross_cutting_001)."
+    max_seconds: 10
+    citation: "NCAM STEM overview · https://www.wgbh.org/foundation/services/ncam/tools-resources/effective-practices-for-description-of-science-content-guidelines-for-describing-stem-images"
+    open_question: null
+    scoring:
+      route: mechanical
+      checks: [faithfulness_nli]
+      basis: doc
+      unscored_reason: null
+  - id: figure_002
+    section: "2.Figures"
+    element: figures
+    type: describe
+    tag: DOC
+    rule: "Foreground data-carrying elements; suppress decorative styling."
+    max_seconds: 10
+    citation: "NCAM STEM overview · https://www.wgbh.org/foundation/services/ncam/tools-resources/effective-practices-for-description-of-science-content-guidelines-for-describing-stem-images"
+    open_question: null
+    scoring:
+      route: judge
+      checks: []
+      basis: doc
+      unscored_reason: null
+  - id: figure_003
+    section: "2.Figures"
+    element: figures
+    type: dont_describe
+    tag: DOC
+    rule: "Do not describe decorative elements (ornamental backgrounds, branded logos, semantically inert color)."
+    max_seconds: null
+    citation: "NCAM STEM overview · https://www.wgbh.org/foundation/services/ncam/tools-resources/effective-practices-for-description-of-science-content-guidelines-for-describing-stem-images"
+    open_question: null
+    scoring:
+      route: judge
+      checks: []
+      basis: doc
+      unscored_reason: null
+  - id: figure_004
+    section: "2.Figures"
+    element: figures
+    type: how
+    tag: DOC
+    rule: "Open with single-sentence type-and-purpose ('A block diagram of …'), then a brief list of components in reading order."
+    max_seconds: 10
+    citation: "NCAM STEM overview · https://www.wgbh.org/foundation/services/ncam/tools-resources/effective-practices-for-description-of-science-content-guidelines-for-describing-stem-images"
+    open_question: null
+    scoring:
+      route: judge
+      checks: []
+      basis: doc
+      unscored_reason: null
+
+  - id: table_001
+    section: "2.Tables"
+    element: tables
+    type: describe
+    tag: DOC
+    rule: "Provide brief summary before reading the table (what it shows, what the dimensions are). Describe only the part the lecturer's speech does not already convey (redundancy gate, cross_cutting_001)."
+    max_seconds: 7
+    citation: "NCAM STEM overview · https://www.wgbh.org/foundation/services/ncam/tools-resources/effective-practices-for-description-of-science-content-guidelines-for-describing-stem-images"
+    open_question: null
+    scoring:
+      route: mechanical
+      checks: [faithfulness_nli]
+      basis: doc
+      unscored_reason: null
+  - id: table_002
+    section: "2.Tables"
+    element: tables
+    type: describe
+    tag: DOC
+    rule: "Split multi-layered tables into smaller sub-tables organized by category."
+    max_seconds: null
+    citation: "NCAM Tables · https://www.wgbh.org/foundation/services/ncam/tools-resources/effective-practices-for-description-of-science-content-tables"
+    open_question: null
+    scoring:
+      route: judge
+      checks: []
+      basis: doc
+      unscored_reason: null
+  - id: table_003
+    section: "2.Tables"
+    element: tables
+    type: dont_describe
+    tag: DOC
+    rule: "Do not describe cell-level styling unless it encodes semantic meaning."
+    max_seconds: null
+    citation: "NCAM Bar Charts · https://www.wgbh.org/foundation/services/ncam/tools-resources/effective-practices-for-description-of-science-content-bar-charts"
+    open_question: null
+    scoring:
+      route: judge
+      checks: []
+      basis: doc
+      unscored_reason: null
+
+  - id: chart_001
+    section: "2.Charts"
+    element: charts
+    type: describe
+    tag: DOC
+    rule: "Open with chart type and what it measures, then a one-sentence trend, then data structure. Describe only the part the lecturer's speech does not already convey (redundancy gate, cross_cutting_001)."
+    max_seconds: 10
+    citation: "NCAM Bar Charts · https://www.wgbh.org/foundation/services/ncam/tools-resources/effective-practices-for-description-of-science-content-bar-charts"
+    citation_extra:
+      - "NCAM STEM overview · https://www.wgbh.org/foundation/services/ncam/tools-resources/effective-practices-for-description-of-science-content-guidelines-for-describing-stem-images"
+    open_question: null
+    scoring:
+      route: mechanical
+      checks: [faithfulness_nli]
+      basis: doc
+      unscored_reason: null
+  - id: chart_002
+    section: "2.Charts"
+    element: charts
+    type: how
+    tag: DOC
+    rule: "Where data is sparse (4 or fewer values), present as a short text list rather than a full table."
+    max_seconds: 7
+    citation: "NCAM Bar Charts · https://www.wgbh.org/foundation/services/ncam/tools-resources/effective-practices-for-description-of-science-content-bar-charts"
+    open_question: null
+    scoring:
+      route: judge
+      checks: []
+      basis: doc
+      unscored_reason: null
+  - id: chart_003
+    section: "2.Charts"
+    element: charts
+    type: dont_describe
+    tag: DOC
+    rule: "Do not describe bar/line color unless colours encode categories the listener must distinguish."
+    max_seconds: null
+    citation: "NCAM Bar Charts · https://www.wgbh.org/foundation/services/ncam/tools-resources/effective-practices-for-description-of-science-content-bar-charts"
+    open_question: null
+    scoring:
+      route: judge
+      checks: []
+      basis: doc
+      unscored_reason: null
+
+  - id: math_typeset_001
+    section: "2.MathTypeset"
+    element: math_typeset
+    type: describe
+    tag: DOC
+    rule: "Surface the equation aurally; mark it semantically so a renderer can verbalize per user preference. Describe only the part the lecturer's speech does not already convey (redundancy gate, cross_cutting_001)."
+    max_seconds: 10
+    citation: "NCAM STEM overview · https://www.wgbh.org/foundation/services/ncam/tools-resources/effective-practices-for-description-of-science-content-guidelines-for-describing-stem-images"
+    open_question: null
+    scoring:
+      route: mechanical
+      checks: [faithfulness_nli]
+      basis: doc
+      unscored_reason: null
+  - id: math_typeset_002
+    section: "2.MathTypeset"
+    element: math_typeset
+    type: how
+    tag: PROV
+    basis: design-hypothesis
+    rule: "Pair every non-trivial equation with a one-line natural-language gloss in the same insertion."
+    max_seconds: 10
+    citation: null
+    open_question: "OQ-MathTypeset-1 : pair each non-trivial equation with a one-line natural-language gloss (aural-parse aid)."
+    bucket: needs_users
+    validation: blv_user_study
+    scoring:
+      route: judge
+      checks: []
+      basis: blv_confirmed
+      unscored_reason: null
+    blv_review:
+      build: 6424ab12
+      rules_sha: "42804e05d3ea"
+      rules_version_reviewed: "1.1"
+      question: "Is this rule right?"
+      n_raters: 1
+      verdicts:
+        - rater: R1
+          verdict: correct
+          note: null
+  - id: math_typeset_003
+    section: "2.MathTypeset"
+    element: math_typeset
+    type: how
+    tag: PROV
+    basis: transfer-from
+    rule: "Use ClearSpeak as the default verbalization grammar, applied consistently within a course; defer to learner preference where the learner has one. (ClearSpeak chosen over MathSpeak because it reads closer to natural spoken mathematics; no universal standard exists.)"
+    max_seconds: null
+    citation: "No universal spoken-math standard exists (NFB, Guidelines for Collegiate Faculty to Teach Mathematics to Blind or Visually Impaired Students). Frankel, Brownstein, Soiffer & Hansen (2016), ETS Research Report RR-16-23 — supporting (grade C): documents ClearSpeak as a defined rule set, not a universal standard."
+    bucket: needs_users
+    validation: blv_user_study
+    scoring:
+      route: judge
+      checks: []
+      basis: blv_unresolved
+      unscored_reason: null
+    blv_review:
+      build: 6424ab12
+      rules_sha: "42804e05d3ea"
+      rules_version_reviewed: "1.1"
+      question: "Is this rule right?"
+      n_raters: 1
+      verdicts:
+        - rater: R1
+          verdict: cannot_tell
+          note: "would need an example."
+
+  - id: code_001
+    section: "2.Code"
+    element: code
+    type: describe
+    tag: PROV
+    basis: operationalization-of
+    rule: "Announce language and purpose ('Python snippet, five lines, defines a binary-search function'). Describe only the part the lecturer's speech does not already convey (redundancy gate, cross_cutting_001)."
+    max_seconds: 5
+    citation: null
+    open_question: "OQ-Code-1 : announce language + purpose then a structural summary (on-screen-text DOC + brevity)."
+    bucket: needs_users
+    validation: blv_user_study
+    scoring:
+      route: unscored
+      checks: []
+      basis: blv_confirmed
+      unscored_reason: unexercised
+    blv_review:
+      build: 6424ab12
+      rules_sha: "42804e05d3ea"
+      rules_version_reviewed: "1.1"
+      question: "Is this rule right?"
+      n_raters: 1
+      verdicts:
+        - rater: R1
+          verdict: correct
+          note: null
+  - id: code_002
+    section: "2.Code"
+    element: code
+    type: describe
+    tag: PROV
+    basis: corollary-of
+    rule: "Surface error or output highlights when the lecturer references them deictically."
+    max_seconds: 5
+    citation: null
+    open_question: "OQ-Code-2 : surface error/output highlights only on a deictic reference."
+    bucket: needs_data
+    validation: based_on_the_annotated_data
+    scoring:
+      route: unscored
+      checks: []
+      basis: blv_confirmed
+      unscored_reason: unexercised
+    blv_review:
+      build: 6424ab12
+      rules_sha: "42804e05d3ea"
+      rules_version_reviewed: "1.1"
+      question: "Is this rule right?"
+      n_raters: 1
+      verdicts:
+        - rater: R1
+          verdict: correct
+          note: null
+  - id: code_003
+    section: "2.Code"
+    element: code
+    type: dont_describe
+    tag: DOC
+    rule: "Do not re-read code the lecturer has read aloud line-by-line (redundancy)."
+    max_seconds: null
+    citation: "WCAG 2.2 Understanding 1.2.5 · https://www.w3.org/WAI/WCAG22/Understanding/audio-description-prerecorded.html"
+    open_question: null
+    scoring:
+      route: unscored
+      checks: []
+      basis: doc
+      unscored_reason: unexercised
+
+  - id: deixis_001
+    section: "2.Deixis"
+    element: deixis
+    type: describe
+    tag: PROV
+    basis: corollary-of
+    rule: "Surface the referent ('the kinetic-energy term, ½mv²'), not the act of pointing."
+    max_seconds: 7
+    citation: null
+    open_question: "OQ-Deixis-1 : surface the referent, not the act of pointing (data-focus S4.G.2) - the defining lecture-AD rule.  "
+    bucket: needs_data
+    validation: based_on_the_annotated_data
+    scoring:
+      route: judge
+      checks: []
+      basis: blv_unresolved
+      unscored_reason: null
+    blv_review:
+      build: 6424ab12
+      rules_sha: "42804e05d3ea"
+      rules_version_reviewed: "1.1"
+      question: "Is this rule right?"
+      n_raters: 1
+      verdicts:
+        - rater: R1
+          verdict: cannot_tell
+          note: "an example would be great."
+  - id: deixis_002
+    section: "2.Deixis"
+    element: deixis
+    type: how
+    tag: DOC
+    rule: "When referent cannot be resolved with confidence, prefer silence to a wrong guess."
+    max_seconds: null
+    citation: "Describe Now · https://arxiv.org/html/2411.11835v2 (S15.7) — Cheema, Seifi & Fazli (2025), DIS · https://doi.org/10.1145/3715336.3735685; also backed by the objectivity principle (cross_cutting_003)."
+    open_question: null
+    bucket: literature_now
+    validation: source_citation
+    scoring:
+      route: unscored
+      checks: []
+      basis: doc
+      unscored_reason: decision_side
+  - id: deixis_003
+    section: "2.Deixis"
+    element: deixis
+    type: dont_describe
+    tag: PROV
+    basis: corollary-of
+    rule: "Do not describe idle cursor motion uncoupled from speech."
+    max_seconds: null
+    citation: null
+    open_question: "OQ-Deixis-4 : suppress idle cursor motion uncoupled from speech.  "
+    bucket: needs_data
+    validation: based_on_the_annotated_data
+    scoring:
+      route: unscored
+      checks: []
+      basis: blv_confirmed
+      unscored_reason: detector_side
+    blv_review:
+      build: 6424ab12
+      rules_sha: "42804e05d3ea"
+      rules_version_reviewed: "1.1"
+      question: "Is this rule right?"
+      n_raters: 1
+      verdicts:
+        - rater: R1
+          verdict: correct
+          note: null
+  - id: deixis_004
+    section: "2.Deixis"
+    element: deixis
+    type: dont_describe
+    tag: PROV
+    basis: corollary-of
+    rule: "Do not describe the pointing act as the description ('the cursor is pointing at it')."
+    max_seconds: null
+    citation: "BY ANALOGY (not direct): NCAM STEM overview S4.G.2 · https://www.wgbh.org/foundation/services/ncam/tools-resources/effective-practices-for-description-of-science-content-guidelines-for-describing-stem-images — 'Description should focus on the data and not extraneous visual elements'; also leans on the provisional surface-the-referent rule deixis_001. No fetched source directly addresses describing a pointing gesture vs its referent in lecture AD."
+    open_question: "OQ-Deixis-1 — support is BY ANALOGY, NOT direct: NCAM data-focus + the provisional deixis_001 (surface-the-referent); the fetched source does not address pointing gestures. default = do not describe the gesture itself ('he is pointing')."
+    bucket: literature_now
+    validation: source_citation
+    scoring:
+      route: judge
+      checks: []
+      basis: by_analogy
+      unscored_reason: null
+  - id: deixis_005
+    section: "Deixis.001"
+    element: deixis
+    type: how
+    tag: PROV
+    basis: design-hypothesis
+    rule: "Resolve bare deictics ('this', 'here', 'this term') from the cursor's dwell anchor at utterance time: sustained dwell or deliberate circling over a slide region counts as a point; transit motion between regions is non-deictic (deixis_003). In this scope the cursor — with highlights and ink — is the only pointing modality, so an unanchored bare deictic resolves to silence (deixis_002)."
+    max_seconds: 7
+    citation: null
+    rationale: "Coverage gap: cursor as the deictic surface. With no hand, laser, or body gesture available, the cursor is the sole carrier of 'this/here'; the deixis rules suppress idle cursor motion but do not state how a cursor point is recognized and bound to the spoken deictic."
+    interaction: "Feeds the referent into deixis_001's surface form within the 7 s deixis budget; low-confidence anchors resolve to silence per cross_cutting_005; collisions retain deixis primacy (length_002)."
+    bucket: needs_data
+    validation: based_on_the_annotated_data
+    open_question: "OQ-Deixis-1 : the minimum dwell duration separating a deliberate point from transit motion (threshold to be set from the annotated data)."
+    scoring:
+      route: mechanical
+      checks: [deixis_referent]
+      basis: blv_confirmed
+      unscored_reason: null
+    blv_review:
+      build: 6424ab12
+      rules_sha: "42804e05d3ea"
+      rules_version_reviewed: "1.1"
+      question: "Is this rule right?"
+      n_raters: 1
+      verdicts:
+        - rater: R1
+          verdict: correct
+          note: null
+  - id: deixis_006
+    section: "Deixis.002"
+    element: deixis
+    type: how
+    tag: PROV
+    basis: corollary-of
+    rule: "Treat highlight boxes, callout shapes, and colour emphasis drawn over a slide as deictic acts: surface the highlighted referent ('the boundary condition, u(0)=0'), not the overlay's appearance — describe colour, shape, or stroke only when it encodes meaning the lecturer relies on."
+    max_seconds: 7
+    citation: "BY ANALOGY (not direct): NCAM STEM overview S4.G.2 · https://www.wgbh.org/foundation/services/ncam/tools-resources/effective-practices-for-description-of-science-content-guidelines-for-describing-stem-images — 'Description should focus on the data and not extraneous visual elements'. NCAM addresses static STEM images and does not mention highlight or callout overlays."
+    rationale: "Coverage gap: on-screen highlight/callout annotations. Highlights and callout boxes are a primary pointing modality of the slides-only scope; the deixis rules cover the cursor and pointing acts but do not classify drawn emphasis overlays as deixis."
+    interaction: "Resolution follows deixis_001's surface form under the redundancy gate; styling suppression mirrors figure_004/chart_003; overflow descends the fallback ladder (length_005)."
+    bucket: literature_now
+    validation: source_citation
+    open_question: null
+    scoring:
+      route: mechanical
+      checks: [deixis_overlay]
+      basis: by_analogy
+      unscored_reason: null
+
+  - id: edge_cases_001
+    section: "Face.001"
+    element: edge_cases
+    type: dont_describe
+    tag: PROV
+    basis: transfer-from
+    rule: "Do not describe the lecturer's face thumbnail — its presence, position, facial expressions, clothing, background, or appearance/disappearance; in this scope it is decoration and the speaker is already carried by the voice. If the lecturer explicitly directs attention to the webcam view (e.g. holds an object to the camera), treat it as an off-slide surface and describe it as such."
+    max_seconds: null
+    citation: "BY ANALOGY (not direct): WCAG Technique G203 · https://www.w3.org/WAI/WCAG21/Techniques/general/G203.html — a single speaker against an unchanging background carries no important time-based visual information warranting description. G203 addresses whole talking-head videos, not a picture-in-picture thumbnail over slides."
+    rationale: "Coverage gap: face thumbnail as decoration. The slides-only scope introduces a persistent corner webcam thumbnail; without explicit suppression, a generator will narrate facial expressions and webcam events, spending gap budget on decoration."
+    interaction: "Pure suppression: frees the length budget, never enters §3.5 collisions, and trivially satisfies the redundancy gate; the rare pedagogical-thumbnail case exits through that off-slide-surface exception rather than weakening the default."
+    bucket: literature_now
+    validation: source_citation
+    open_question: "OQ-Face-1 : whether pedagogically meaningful thumbnail events (lecturer holds an object to the webcam) are frequent enough in footage to need a describe-path beyond the existing edge-case routing."
+    scoring:
+      route: judge
+      checks: []
+      basis: by_analogy
+      unscored_reason: null
+  - id: edge_cases_002
+    section: "EdgeCases.001"
+    element: edge_cases
+    type: how
+    tag: PROV
+    basis: design-hypothesis
+    rule: "When the lecturer zooms into, scrolls within, or otherwise reframes the shared slide, describe the content the new framing presents ('the lower-right quadrant of the diagram fills the screen: ...'), not the navigation mechanics; treat a sustained close-up on a region as deictic emphasis and resolve it per §2.Deixis. Name the region now shown rather than the camera-like move."
+    max_seconds: 5
+    citation: null
+    rationale: "Coverage gap: screen-share reframing artifacts. Zooming and scrolling are routine in slides-only screencasts; wrong-window and off-slide surfaces are covered elsewhere, but not reframing of the slide surface itself."
+    interaction: "Gated by cross_cutting_001 (already-described regions get a name-only re-anchor per cross_cutting_006); fits the 5 s budget; ranks with tier 5-6 in length_002 collisions unless the reframing is the lecturer's deictic target."
+    bucket: needs_data
+    validation: based_on_the_annotated_data
+    open_question: "OQ-EdgeCases-1 : whether continuous scroll-through (a long document) needs a sampling rule — describe at scroll-rest only — pending footage frequency."
+    scoring:
+      route: unscored
+      checks: []
+      basis: blv_confirmed
+      unscored_reason: no_context_signal
+    blv_review:
+      build: 6424ab12
+      rules_sha: "42804e05d3ea"
+      rules_version_reviewed: "1.1"
+      question: "Is this rule right?"
+      n_raters: 1
+      verdicts:
+        - rater: R1
+          verdict: correct
+          note: null

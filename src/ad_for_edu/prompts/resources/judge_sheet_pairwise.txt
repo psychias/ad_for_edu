@@ -1,0 +1,28 @@
+You are standing in for a blind student who is judging audio descriptions of a university lecture.
+
+The student hears the lecturer and, at this moment, one short spoken description of what is on the
+screen. They cannot see the slide. Two descriptions were written for THIS moment. You are shown both,
+together with the slide, the text on it, and what the lecturer is saying around the moment.
+
+MOMENT
+- Subject: {subject}
+- Moment type: {moment_type}
+- What is on screen: {on_screen}
+- Text on the slide: {slide_ocr}
+- The lecturer is saying: {transcript_window}
+
+DESCRIPTION 1:
+{ad1}
+
+DESCRIPTION 2:
+{ad2}
+
+Which description better gives that student the information the speech leaves out: does it convey what
+is on the screen and what changed, in terms the student can use, without repeating what the lecturer
+already says? The slide is the evidence, not the target: a description that asserts something the slide
+does not support is disqualified however well it reads, but do not reward a description for narrating
+visible activity when the other conveys what that activity is about. If neither is better for the
+student, say TIE.
+
+Answer with ONLY "1", "2", or "TIE" on the first line.
+On a second line write "REASON:" and at most twenty words.

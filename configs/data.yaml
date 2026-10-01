@@ -1,0 +1,65 @@
+# Where the data is.
+#
+# Dataset names come from the environment and have no default. They are resolved
+# when a file is asked for, so a command needs only the variables of the data it
+# touches. Every other location is relative to AD_FOR_EDU_DATA_DIR (what is read)
+# or to AD_FOR_EDU_WORK_DIR (what is written).
+
+# "hub" downloads from the dataset hub; "local_dir" reads a directory with the
+# same layout, in which case the dataset variable holds the directory.
+source: hub
+
+datasets:
+  references:
+    id: ${AD_FOR_EDU_REFERENCES_DATASET}
+    files:
+      # One row per moment and writer: the decision, the description if any, the context.
+      reference_rows: gold_eval.jsonl
+      # Chat examples built from the reference rows, one file per side and input arm.
+      train_examples: sft_train.jsonl
+      test_examples: sft_eval.jsonl
+      train_examples_text_only: sft_train_textonly.jsonl
+      test_examples_text_only: sft_eval_textonly.jsonl
+
+  preferences:
+    id: ${AD_FOR_EDU_PREFERENCES_DATASET}
+    files:
+      # Natural and controlled pairs with their direction and eligibility.
+      training_pairs: dpo_train.jsonl
+      # The prompt of each moment a pair belongs to.
+      pair_prompts: dpo_prompts.jsonl
+      # The 400 pairs rated by people, without labels.
+      rated_pairs: human_val_400.jsonl
+      # The same pairs with the label of each rater.
+      rated_pairs_with_labels: data/test_human-00000-of-00001.parquet
+      # The labels a model gave on the same pairs.
+      machine_labels: machine_labels_{annotator}.jsonl
+
+  # One directory per lecture, one image per keyframe, named by its time: HHMMSS.jpg.
+  keyframes:
+    id: ${AD_FOR_EDU_KEYFRAMES_DATASET}
+    files:
+      keyframe: "{lecture}/{frame}"
+
+local:
+  lecture_manifest: lectures.csv
+  videos: videos
+  audio: preprocessing/audio
+  transcripts: preprocessing/transcripts
+  speech_gaps: preprocessing/vad
+  slide_text: preprocessing/ocr
+  keyframes: preprocessing/keyframes
+
+outputs:
+  events: moments/events
+  stills: moments/stills
+  moments: moments/classified
+  references: references
+  candidates: pairs/candidates
+  controlled_pairs: pairs/controlled
+  clips: pairs/clips
+  verdicts: pairs/verdicts
+  pair_sets: pairs/sets
+  examples: training/examples
+  runs: runs
+  evaluation: evaluation
