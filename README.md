@@ -61,48 +61,26 @@ Beside it the repository computes overlap with references, image–text alignmen
 between two systems, per-category defect localisation, and how far each metric agrees with
 the people who rated pairs by hand.
 
-### What the metric is, and what it is not
+### Which rule a description breaks
 
-**It is a metric: it ranks systems.** A score is the mean over a system's whole output,
-and it puts a slide-title readout last and the trained systems above it. The novelty term
-is part of that definition, so the metric has one form and the settings file requires it.
+A score on its own says a description is worse without saying what is wrong with it.
+`ad-for-edu diagnose` answers that: per rule identifier, how many descriptions the rule
+applies to, how many broke it, and the worst offenders. The denominator is the rule's own,
+because a rule broken on three of four figures is a different finding from three of four
+hundred descriptions.
 
-**The mechanical mode is also a diagnostic: it names the rule.** Run on one description it
-says which rules that description broke, by rule identifier. `ad-for-edu diagnose` prints
-that per rule, with the number of descriptions each rule applies to beside it, because a
-rule broken on three of four figures is a different finding from three of four hundred
-descriptions.
+Two columns, not one. Three of the six components count violations, so anything below full
+credit means one was found. The other three return a graded share of something a good
+description does anyway: one that names what the slide does not spell out scores below one
+on terminology and has broken no rule. The report keeps those apart, since merging them
+puts a reference writer at ninety-six per cent broken.
 
-A breach and a low score are reported apart. Three of the six components count violations,
-so anything below full credit means one was found. The other three return a graded share of
-something a good description does anyway: a description that names what the slide does not
-spell out scores below one on terminology and has broken no rule. Merging the two would put
-a real reference writer at ninety-six per cent broken, so the diagnostic keeps them in
-separate columns.
-
-**A description is scored in the company of the rest.** The six components read one
-description at a time, and the novelty term reads it against what the same system already
-said in that lecture, scaling it by how much it adds. A system that reads the slide text
-aloud at every moment is therefore scored on the repetition as well as on each line, and
-lands near the bottom of the table. The term is also the only check on the two rules
-against re-describing visual content an earlier description already covered, so those
-rules are answered wherever a system is scored.
-
-**Compliance is not quality.** A description can keep all 45 rules and still be the wrong
-thing to say. Three consequences the repository holds to:
-
-- it is not a checkpoint-selection criterion, and nothing here selects by it;
-- a system trained to maximise these components must not then be scored by them, because
-  the column would report how well it optimised its own objective rather than how good its
-  descriptions are;
-- the modes are reported apart and never averaged, and a mode that does not score a
-  category abstains rather than scoring zero.
-
-Where the standard and the implementation disagree, the repository states it rather than
-smoothing it over. The standard routes fourteen rules as mechanically checkable; seven of
-them are scored by the two components that need a learned model, so they are reachable only
-in the local mode, and two have no check here at all. `ad-for-edu diagnose` names all three
-groups.
+It reports only the rules its mode tested. A mode that abstains on a category never
+checked that category's rules, so they are named as untested rather than listed as
+unbroken. The same holds for the standard's own routing: of the fourteen rules it marks
+mechanically checkable, five are scored in the mechanical mode, seven need a learned model
+and so are reachable only in the local mode, and two have no check here at all. The
+diagnostic names all three groups.
 
 ## Installing
 
