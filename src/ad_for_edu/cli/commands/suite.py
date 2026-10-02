@@ -84,6 +84,9 @@ class Diagnose(Command):
             default="mechanical",
             help="which offline mode to diagnose; the mode decides which rules are tested",
         )
+        from .evaluate import add_field_options
+
+        add_field_options(parser)
 
     def run(self, args: argparse.Namespace) -> int:
         from ...compliance import (
@@ -95,11 +98,10 @@ class Diagnose(Command):
             score_predictions,
         )
         from ...core.outputs import guard_new
-        from ...inference import read_predictions
         from ..common import output_path
-        from .evaluate import contexts_of
+        from .evaluate import contexts_of, read_described, read_moments
 
-        moment_rows = read_jsonl(args.moments)
+        moment_rows, _fields = read_moments(args, args.moments)
         contexts = contexts_of(moment_rows)
         times = {
             str(row.get("moment_id") or row.get("id")): float(
@@ -107,8 +109,12 @@ class Diagnose(Command):
             )
             for row in moment_rows
         }
+        lectures = {
+            str(row.get("moment_id") or row.get("id")): str(row.get("lecture") or "")
+            for row in moment_rows
+        }
         predictions = [
-            prediction.as_dict() for prediction in read_predictions(args.predictions)
+            prediction.as_dict() for prediction in read_described(args, args.predictions)
         ]
         scorer = build_scorer(args.mode)
         rows = score_predictions(
@@ -117,6 +123,7 @@ class Diagnose(Command):
             scorer,
             sequence_factor=build_sequence_factor(),
             times=times,
+            lectures=lectures,
             system=args.predictions.stem.replace("predictions_", ""),
         )
         found = rule_diagnostic(rows, scorer, RuleMap.load())
@@ -176,6 +183,9 @@ class Evaluate(Command):
             default="mechanical",
             help="which mode the per-rule diagnostic reports",
         )
+        from .evaluate import add_field_options
+
+        add_field_options(parser)
 
     def run(self, args: argparse.Namespace) -> int:
         base = args.out or (work_dir() / "evaluation")
@@ -250,6 +260,13 @@ class Evaluate(Command):
     ) -> list[str]:
         """The arguments one stage is called with, and where it writes."""
         shared = ["--overwrite"] if args.overwrite else []
+        # A dataset that names its columns differently is read the same way by every
+        # stage, so the mapping is passed on rather than applied once and lost.
+        mapping: list[str] = []
+        if getattr(args, "field_map", None):
+            mapping = ["--field-map", str(args.field_map)]
+        elif getattr(args, "fields", None):
+            mapping = ["--fields", *list(args.fields)]
 
         def paths(given: Sequence[Path]) -> list[str]:
             return [str(path) for path in given]
@@ -261,6 +278,7 @@ class Evaluate(Command):
                 *(["--references", str(args.references)] if args.references else []),
                 "--metrics", *args.metrics,
                 "--out", str(base / "systems.md"),
+                *mapping,
                 *shared,
             ]
         if stage == "diagnose":
@@ -269,6 +287,7 @@ class Evaluate(Command):
                 "--moments", str(args.moments),
                 "--mode", args.mode,
                 "--out", str(base / f"rules_broken_{args.mode}.md"),
+                *mapping,
                 *shared,
             ]
         if stage == "reference-writer-compliance":
@@ -279,6 +298,7 @@ class Evaluate(Command):
                 "--moments", str(args.moments),
                 *(["--references", str(args.references)] if args.references else []),
                 *(["--metrics", *modes] if modes else []),
+                *mapping,
                 "--out", str(base / "reference_writers.json"),
             ]
         if stage == "rank-stability":

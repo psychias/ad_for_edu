@@ -47,20 +47,33 @@ class Prediction:
         return asdict(self)
 
 
-def read_predictions(path: str | Path) -> list[Prediction]:
-    """The predictions of a file, checked."""
-    rows: list[Prediction] = []
+def predictions_from(
+    rows: Iterable[Mapping[str, Any]], *, where: str = "these rows"
+) -> list[Prediction]:
+    """Predictions from rows already under this package's field names, checked.
+
+    Separate from `read_predictions` so that a dataset whose columns were renamed by a
+    field map is checked by the same code as one that already used these names.
+    """
+    out: list[Prediction] = []
     seen: set[str] = set()
-    for row in iter_jsonl(path):
+    for row in rows:
         missing = [name for name in ("moment_id", "ad_text") if name not in row]
         if missing:
-            raise ContractError(f"{path}: a prediction lacks {missing}")
+            raise ContractError(f"{where}: a prediction lacks {missing}")
         moment = str(row["moment_id"])
         if moment in seen:
-            raise ContractError(f"{path}: moment {moment!r} is predicted twice; one row per moment")
+            raise ContractError(
+                f"{where}: moment {moment!r} is predicted twice; one row per moment"
+            )
         seen.add(moment)
-        rows.append(Prediction(**{name: row.get(name) for name in FIELDS}))
-    return rows
+        out.append(Prediction(**{name: row.get(name) for name in FIELDS}))
+    return out
+
+
+def read_predictions(path: str | Path) -> list[Prediction]:
+    """The predictions of a file, checked."""
+    return predictions_from(iter_jsonl(path), where=str(path))
 
 
 def write_predictions(path: str | Path, predictions: Iterable[Prediction]) -> int:

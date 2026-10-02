@@ -28,12 +28,16 @@ def score_predictions(
     *,
     sequence_factor: SequenceFactor | None = None,
     times: Mapping[str, float] | None = None,
+    lectures: Mapping[str, str] | None = None,
     system: str = "",
 ) -> list[dict[str, Any]]:
     """Score every prediction of one system.
 
-    `sequence_factor` needs `times`, the time of each moment, to order the
-    descriptions inside a lecture.
+    `sequence_factor` needs `times`, the time of each moment, to order the descriptions
+    inside a lecture. `lectures` says which lecture each moment belongs to; without it
+    the lecture is taken from the moment id, which only works for this package's own
+    identifiers. A dataset from elsewhere must pass it, or every moment becomes its own
+    lecture and the factor can never fire.
     """
     if sequence_factor is not None and times is None:
         raise ContractError("a sequence factor needs the time of each moment")
@@ -56,7 +60,13 @@ def score_predictions(
         output_ids[moment] = prediction.get("output_id")
     if sequence_factor is not None:
         sequence = [
-            SequenceItem(moment, float(times.get(moment, 0.0)), texts[moment]) for moment in scored
+            SequenceItem(
+                moment,
+                float(times.get(moment, 0.0)),
+                texts[moment],
+                in_lecture=str((lectures or {}).get(moment, "")),
+            )
+            for moment in scored
         ]
         sequence_factor.apply(scored, sequence)
         # The factor is the only check on the rules against re-describing what an

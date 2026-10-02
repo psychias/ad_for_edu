@@ -82,6 +82,29 @@ mechanically checkable, five are scored in the mechanical mode, seven need a lea
 and so are reachable only in the local mode, and two have no check here at all. The
 diagnostic names all three groups.
 
+### Scoring someone else's dataset
+
+The evaluation needs, per moment, an identifier, the lecture it belongs to, a time, a
+type, and the text on screen and spoken nearby; and per description, an identifier and the
+text. Any dataset that can supply those can be scored. Name its columns and nothing else
+changes:
+
+```bash
+ad-for-edu diagnose --predictions theirs.jsonl --moments theirs_moments.jsonl \
+    --fields moment_id=id lecture=course time=start type=kind \
+             slide_text=ocr on_screen=screen transcript_window=said text=narration
+```
+
+`--field-map a.yaml` takes the same mapping from a file, and `ad-for-edu evaluate` passes
+whichever you give to every stage, so one dataset is read one way throughout. Columns the
+mapping does not name are carried through untouched.
+
+One of those fields is load-bearing. The novelty term groups a system's descriptions by
+lecture, and with no lecture every moment is its own, nothing can be seen to repeat, and
+the term silently stops working while the scores stay plausible. So the lecture is checked
+rather than assumed: a dataset whose lecture cannot be found is refused, with the column to
+set named in the message.
+
 ## Installing
 
 Python 3.10 or later.

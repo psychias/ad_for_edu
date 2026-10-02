@@ -27,15 +27,23 @@ from .scorer import ScoreRow
 
 @dataclass(frozen=True)
 class SequenceItem:
-    """One description of a system, placed in its lecture."""
+    """One description of a system, placed in its lecture.
+
+    `in_lecture` is the lecture, given rather than derived where a dataset knows it. It
+    falls back to the part of the moment id before the separator, which is this package's
+    own convention. An identifier from elsewhere has no separator and falls back to
+    itself, which would make every moment its own lecture and leave nothing able to
+    repeat, so a reader of such a dataset must pass the lecture; `data.fields` is how.
+    """
 
     moment_id: str
     time: float
     text: str | None
+    in_lecture: str = ""
 
     @property
     def lecture(self) -> str:
-        return lecture_of(self.moment_id)
+        return self.in_lecture or lecture_of(self.moment_id)
 
 
 @dataclass(frozen=True)

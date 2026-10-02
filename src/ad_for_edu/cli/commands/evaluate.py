@@ -25,7 +25,11 @@ CATEGORIES = ("style", "terminology", "length", "deixis", "faithfulness", "non_r
 
 
 def contexts_of(rows: Sequence[Mapping[str, Any]]) -> dict[str, MomentContext]:
-    """What is known about each moment when a description of it is scored."""
+    """What is known about each moment when a description of it is scored.
+
+    Takes rows already put through a field map, so the names here are this package's own
+    whatever the dataset called them.
+    """
     out = {}
     for row in rows:
         moment_id = str(row.get("moment_id") or row.get("id"))
@@ -39,6 +43,56 @@ def contexts_of(rows: Sequence[Mapping[str, Any]]) -> dict[str, MomentContext]:
             renders_cursor=row.get("renders_cursor"),
         )
     return out
+
+
+def add_field_options(parser: argparse.ArgumentParser) -> None:
+    """How to read a dataset that calls its columns something else."""
+    parser.add_argument(
+        "--fields",
+        nargs="*",
+        default=None,
+        metavar="NAME=COLUMN",
+        help=(
+            "map this package's field names onto a dataset's own columns, for example "
+            "moment_id=id lecture=course time=start. Run with none to see the names."
+        ),
+    )
+    parser.add_argument(
+        "--field-map",
+        type=Path,
+        default=None,
+        help="a YAML file of the same mapping, instead of listing it",
+    )
+
+
+def read_moments(args: argparse.Namespace, path: Path) -> tuple[list[dict], Any]:
+    """The moments of any dataset, under this package's names, grouped by lecture.
+
+    The grouping is checked rather than assumed: a dataset whose lecture cannot be found
+    would give one lecture per moment, which silently stops the novelty term from ever
+    firing.
+    """
+    from ...data.fields import FieldMap, assert_lectures_group
+
+    given = getattr(args, "field_map", None)
+    fields = FieldMap.load(given) if given else FieldMap.parse(getattr(args, "fields", None))
+    rows = fields.rows(read_jsonl(path))
+    assert_lectures_group(rows, fields=fields, what=str(path.name))
+    return rows, fields
+
+
+def read_described(args: argparse.Namespace, path: Path):
+    """One system's descriptions, under this package's names whatever the dataset called them."""
+    from ...data.fields import FieldMap
+    from ...inference import predictions_from
+
+    given = getattr(args, "field_map", None)
+    fields = FieldMap.load(given) if given else FieldMap.parse(getattr(args, "fields", None))
+    if not fields.renamed:
+        from ...inference import read_predictions
+
+        return read_predictions(path)
+    return predictions_from(fields.rows(read_jsonl(path)), where=str(path))
 
 
 def references_by_moment(path: Path | None, catalog: DataCatalog) -> dict[str, list[str]]:
@@ -145,14 +199,14 @@ class ScoreSystems(Command):
             default=None,
             help="the novelty knee, when it is to differ from the settings file",
         )
+        add_field_options(parser)
 
     def run(self, args: argparse.Namespace) -> int:
         from ...evaluation import over_seeds, render, score_system
-        from ...inference import read_predictions
         from .describe import eval_moments
 
         catalog = DataCatalog.load()
-        rows = read_jsonl(args.moments)
+        rows, _fields = read_moments(args, args.moments)
         moments = {
             moment.moment_id: moment
             for moment in eval_moments(rows, catalog, with_pictures=False)
@@ -170,7 +224,7 @@ class ScoreSystems(Command):
             by_system.setdefault(system, []).append(
                 score_system(
                     system,
-                    read_predictions(path),
+                    read_described(args, path),
                     metrics,
                     moments,
                     references,
@@ -488,6 +542,7 @@ class ReferenceWriterCompliance(Command):
             nargs="+",
             default=["compliance:mechanical", "compliance:local"],
         )
+        add_field_options(parser)
 
     def run(self, args: argparse.Namespace) -> int:
         from ...evaluation import render, score_system
@@ -496,7 +551,7 @@ class ReferenceWriterCompliance(Command):
 
         catalog = DataCatalog.load()
         source = args.references or catalog.dataset_file("reference_rows")
-        rows = read_jsonl(args.moments)
+        rows, _fields = read_moments(args, args.moments)
         moments = {
             moment.moment_id: moment
             for moment in eval_moments(rows, catalog, with_pictures=False)
