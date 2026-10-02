@@ -717,3 +717,93 @@ def test_a_feature_that_is_not_in_the_file_is_refused(workspace: Path):
             ]
         )
     assert "clipscore" in str(raised.value)
+
+
+# --------------------------------------- a rater is named by a pseudonym, never a person
+def test_a_label_file_named_after_a_person_is_refused(workspace: Path, capsys):
+    """The rater's name reaches the report, so it cannot be a participant's."""
+    material = rated_material(workspace)
+    named_after_someone = workspace / "jane_doe_answers.jsonl"
+    named_after_someone.write_bytes(material["labels"][0].read_bytes())
+    assert (
+        main(
+            [
+                "rater-agreement",
+                "--pairs",
+                str(material["pairs"]),
+                "--labels",
+                str(named_after_someone),
+                "--scores",
+                str(material["scores"]),
+            ]
+        )
+        == 1
+    )
+    message = capsys.readouterr().err
+    assert "not pseudonyms" in message
+    # The refusal must not repeat the name it is protecting.
+    assert "jane" not in message.lower() and "doe" not in message.lower()
+
+
+def test_such_a_file_can_still_be_used_under_a_pseudonym(workspace: Path, capsys):
+    material = rated_material(workspace)
+    named_after_someone = workspace / "jane_doe_answers.jsonl"
+    named_after_someone.write_bytes(material["labels"][0].read_bytes())
+    assert (
+        main(
+            [
+                "rater-agreement",
+                "--pairs",
+                str(material["pairs"]),
+                "--labels",
+                str(named_after_someone),
+                "--raters",
+                "R1",
+                "--scores",
+                str(material["scores"]),
+            ]
+        )
+        == 0
+    )
+    printed = capsys.readouterr().out
+    assert "R1" in printed
+    assert "jane" not in printed.lower()
+
+
+def test_one_name_per_file_is_required(workspace: Path):
+    material = rated_material(workspace)
+    with pytest.raises(SystemExit, match="one name per file"):
+        main(
+            [
+                "rater-agreement",
+                "--pairs",
+                str(material["pairs"]),
+                "--labels",
+                *[str(path) for path in material["labels"]],
+                "--raters",
+                "R1",
+                "--scores",
+                str(material["scores"]),
+            ]
+        )
+
+
+def test_the_preference_head_refuses_a_person_named_file_too(workspace: Path, capsys):
+    material = rated_material(workspace)
+    named_after_someone = workspace / "jane_doe_answers.jsonl"
+    named_after_someone.write_bytes(material["labels"][0].read_bytes())
+    assert (
+        main(
+            [
+                "fit-preference-head",
+                "--pairs",
+                str(material["pairs"]),
+                "--labels",
+                str(named_after_someone),
+                "--features",
+                str(material["features"]),
+            ]
+        )
+        == 1
+    )
+    assert "not pseudonyms" in capsys.readouterr().err

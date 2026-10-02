@@ -15,16 +15,20 @@ from .head import (
 )
 from .raters import (
     ORDER_SENSITIVE,
+    PSEUDONYM,
     Cell,
     RaterReport,
     build_report,
     cell_for,
+    checked_rater_names,
+    is_pseudonym,
     render,
     verdicts_for,
 )
 
 __all__ = [
     "ORDER_SENSITIVE",
+    "PSEUDONYM",
     "SIDES",
     "Cell",
     "FeaturedPair",
@@ -33,9 +37,11 @@ __all__ = [
     "RaterReport",
     "build_report",
     "cell_for",
+    "checked_rater_names",
     "features_from_scores",
     "fit",
     "freeze",
+    "is_pseudonym",
     "logistic_weights",
     "out_of_fold",
     "render",

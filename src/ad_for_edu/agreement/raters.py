@@ -17,21 +17,59 @@ reported beside the agreement.
 judge answered differently each way round, and averaging them into the rest would
 describe a different population. They are reported, never mixed in.
 
-Raters are named by what a report calls them, not by who they are.
+**Raters are named by what a report calls them, not by who they are.** That is
+enforced rather than asked for: `checked_rater_names` refuses anything but a
+pseudonym, so a label file named after the person who produced it cannot put their
+name into a report, a table or a saved result. People who rate study material are
+study participants, and a pseudonym is the only identity this package will carry.
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+import re
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
+from ..core.errors import ContractError
 from ..data.schema import SIDES, TIE
 from ..evaluation.decisions import PairScores
 from ..stats.agreement import AgreementCoefficient, complete_units, unanimous
 
 #: Pairs a judge answered differently in the two orders. Reported on their own.
 ORDER_SENSITIVE = "natural_flip"
+
+#: The only shape a rater's name may take: R1, or rater1, or rater_1.
+PSEUDONYM = re.compile(r"^(?:R|rater[_-]?)(\d{1,3})$", re.IGNORECASE)
+
+
+def is_pseudonym(name: str) -> bool:
+    """Whether `name` says what a report calls a rater rather than who they are."""
+    return bool(PSEUDONYM.match(str(name).strip()))
+
+
+def checked_rater_names(names: Iterable[str]) -> tuple[str, ...]:
+    """The names, if every one is a pseudonym; otherwise an error quoting none of them.
+
+    A name that is not a pseudonym may be a participant's, and this package cannot
+    tell which it is. So it refuses the whole set rather than guess, and the message
+    counts the offenders instead of repeating them: an error that prints the name it
+    is protecting has written it into every log that captured the error.
+    """
+    given = [str(name).strip() for name in names]
+    if not given:
+        raise ContractError("no rater was named")
+    wrong = sum(1 for name in given if not is_pseudonym(name))
+    if wrong:
+        raise ContractError(
+            f"{wrong} of {len(given)} rater names are not pseudonyms. A rater is named "
+            "R1, rater1 or rater_1, never after the person who rated. Rename the label "
+            "files, or name the raters with --raters in the order the files are given."
+        )
+    repeated = sorted({name for name in given if given.count(name) > 1})
+    if repeated:
+        raise ContractError(f"a rater is named more than once: {repeated}")
+    return tuple(given)
 
 
 @dataclass(frozen=True)

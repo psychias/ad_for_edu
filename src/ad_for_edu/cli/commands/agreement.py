@@ -11,15 +11,28 @@ from ...core.outputs import guard_new
 from ..common import COMMANDS, Command, output_path, report
 
 
-def rater_labels(paths: list[Path]) -> dict[str, dict[str, str]]:
-    """One rater per file, named by the file. A label that is not a side stays as it is.
+def rater_labels(
+    paths: list[Path], names: list[str] | None = None
+) -> dict[str, dict[str, str]]:
+    """One rater per file. A label that is not a side stays as it is.
 
     A tie is kept rather than dropped, because how often a rater declined to choose is
     part of what the comparison is about.
+
+    The rater's name is what a report will print, so it has to be a pseudonym. Given
+    explicitly it is used in the order the files were given; otherwise it is taken from
+    the file name, which is then checked. A file named after the person who rated is
+    refused rather than quietly turned into a column heading.
     """
+    from ...agreement.raters import checked_rater_names
+
+    if names is not None and len(names) != len(paths):
+        raise SystemExit(
+            f"{len(names)} rater names for {len(paths)} label files; give one name per file"
+        )
+    chosen = checked_rater_names(names if names is not None else [p.stem for p in paths])
     per_rater: dict[str, dict[str, str]] = {}
-    for path in paths:
-        name = path.stem
+    for name, path in zip(chosen, paths, strict=True):
         per_rater[name] = {
             str(row["pair_id"]): str(row.get("side") or row.get("choice") or "")
             for row in read_jsonl(path)
@@ -39,7 +52,13 @@ class RaterAgreement(Command):
             type=Path,
             nargs="+",
             required=True,
-            help="one file per rater; the file name is the rater",
+            help="one file per rater; its name is the rater unless --raters says",
+        )
+        parser.add_argument(
+            "--raters",
+            nargs="*",
+            default=None,
+            help="the pseudonym for each label file, in the order the files are given",
         )
         parser.add_argument(
             "--scores",
@@ -59,7 +78,7 @@ class RaterAgreement(Command):
         from .evaluate import side_scores
 
         pairs = read_jsonl(args.pairs)
-        labels = rater_labels(args.labels)
+        labels = rater_labels(args.labels, args.raters)
         per_pair = side_scores(args.scores)
         scorers = sorted({name for scores in per_pair.values() for name in scores})
         by_scorer = {
@@ -106,7 +125,13 @@ class FitPreferenceHead(Command):
             type=Path,
             nargs="+",
             required=True,
-            help="one file per rater; the file name is the rater",
+            help="one file per rater; its name is the rater unless --raters says",
+        )
+        parser.add_argument(
+            "--raters",
+            nargs="*",
+            default=None,
+            help="the pseudonym for each label file, in the order the files are given",
         )
         parser.add_argument(
             "--features",
@@ -147,7 +172,7 @@ class FitPreferenceHead(Command):
         )
 
         pairs_rows = {str(row["pair_id"]): row for row in read_jsonl(args.pairs)}
-        labels = rater_labels(args.labels)
+        labels = rater_labels(args.labels, args.raters)
         featured: dict[str, FeaturedPair] = {}
         available: set[str] = set()
         for row in read_jsonl(args.features):

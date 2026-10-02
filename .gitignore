@@ -49,3 +49,16 @@ venv/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Anything that could carry a study participant's details. People who rate material are
+# participants: a report names them R1, R2 and so on, and the rater-agreement commands
+# refuse a label file whose name is not a pseudonym. These rules are by name rather than
+# by location, so a file moved out of the data directory does not become committable.
+*_labels.jsonl
+*_labels_*.jsonl
+human_labels_*.jsonl
+rater_pseudonyms.json
+annotators_data/
+blv_responses_*.jsonl
+*answers_*.htm
+*answers_*.html
