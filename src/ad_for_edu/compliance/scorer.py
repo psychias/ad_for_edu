@@ -2,10 +2,9 @@
 
     score(text, moment) = mean of the components that apply to the moment
 
-Binding the components to a mode is the point of this class. Every result is
-checked against what the mode promises, so a scorer built with model-backed
-components cannot report itself as mechanical, and a component that stops
-scoring is noticed at the first description instead of in a table.
+This class binds components to a mode and checks every result against what the mode
+declares. A scorer built with model-backed components cannot report itself as mechanical,
+and a component that stops scoring fails on the first description rather than in a table.
 """
 
 from __future__ import annotations

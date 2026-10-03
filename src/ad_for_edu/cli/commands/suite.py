@@ -1,19 +1,18 @@
-"""The whole evaluation in one invocation, and the per-rule diagnostic.
+"""The evaluation suite and the per-rule diagnostic.
 
-`evaluate` runs the stages of the evaluation that the inputs it is given allow, and
-writes one directory. It calls the individual commands rather than reimplementing
-them, so a stage cannot behave one way on its own and another way in the suite.
+`evaluate` runs whichever stages its inputs permit and writes one directory. It invokes
+the individual commands through the program's own entry point, so a stage cannot behave
+differently inside the suite than on its own.
 
-Two properties are worth stating because they are what make the suite honest.
+Two properties follow from the suite's structure.
 
-*One estimate, one decision.* Each paid stage prices its own work. Run together they
-would ask several times over, so the suite totals them first, prints one estimate,
-and stops unless it is told to spend. Nothing that can call a model is built before
-that point.
+Each paid stage prices its own work and would otherwise request approval separately. The
+suite totals them, prints one estimate and exits; no object capable of calling a model is
+constructed before approval.
 
-*A stage that cannot run is named, not skipped quietly.* The suite reports, per stage,
-whether it ran, what it wrote, and why it did not — so a half-filled directory cannot
-be read as a complete evaluation.
+The summary records every stage: whether it ran, what it wrote, and for a stage that did
+not, the input that was absent. A partially filled output directory is distinguishable
+from a complete evaluation.
 """
 
 from __future__ import annotations

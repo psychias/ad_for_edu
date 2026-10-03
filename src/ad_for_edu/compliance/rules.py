@@ -1,30 +1,27 @@
 """Which rules of the standard each component scores.
 
-A compliance score on its own says a description is worse without saying what is
-wrong with it. This module is what turns the mechanical mode into a diagnostic: it
-names the rules a description broke.
+This mapping is what lets the mechanical mode name the rules a description broke, rather
+than report a score alone.
 
-The mapping is **derived, not transcribed.** The rule table already carries a
-`scoring_checks` field naming the check that scores each rule, and the only thing
-authored here is which of those check names each component implements. The rule ids
-then come from the table, so a rule that moves category or route cannot leave a
-stale id behind in this file.
+The mapping is derived from the rule table, not transcribed. The table carries a
+`scoring_checks` field naming the check that scores each rule; the only thing authored here
+is which of those check names each component implements. Rule identifiers come from the
+table, so a rule that changes category or route leaves no stale identifier in this file.
 
-Three facts fall out of that derivation and are worth stating, because each is a
-place where the standard and the implementation do not line up:
+The derivation exposes three places where the standard and the implementation differ.
 
-*The mode and the route are different sets.* Fourteen rules are routed `mechanical`,
-but seven of them are scored by the two components that need a learned model, so
-they are reachable only in the local mode. The mechanical mode scores five.
+Mode and route are different sets. Fourteen rules are routed `mechanical`, but seven are
+scored by the two components requiring a learned model and so are reachable only in the
+local mode. The mechanical mode scores five.
 
-*Two routed rules have no check at all.* `rung_reachable` and `transition_effect` are
-named by the table and implemented by nothing. They are listed in
-`WITHOUT_A_COMPONENT` rather than passed over, so the gap is a stated property.
+Two routed rules have no implementation. `rung_reachable` and `transition_effect` are named
+by the table and implemented by nothing; `WITHOUT_A_COMPONENT` lists them, which makes the
+gap a declared property of this module.
 
-*The novelty term scores a rule the table calls unscored.* The table names no check
-for the rule against re-describing what an earlier description already covered,
-which is exactly what the within-lecture novelty term measures. Those two ids are
-therefore authored here, not derived, and `SEQUENCE_RULES` says so.
+The novelty term scores a rule the table marks unscored. The table names no check for the
+rule against re-describing content an earlier description covered, which is what the
+within-lecture novelty term measures. Those two identifiers are authored in
+`SEQUENCE_RULES` rather than derived.
 """
 
 from __future__ import annotations

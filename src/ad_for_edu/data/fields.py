@@ -1,24 +1,20 @@
-"""Reading someone else's rows: a map from this package's field names to theirs.
+"""Mapping another dataset's column names onto this package's field names.
 
-The evaluation does not need the corpus this package was built around. It needs, per
-moment, an identifier, the lecture the moment belongs to, a time, a type, and the text
-that was on screen and spoken nearby; and per description, an identifier and the text.
-Any dataset that can supply those can be scored, whatever it calls its columns.
+The evaluation requires, per moment, an identifier, the lecture it belongs to, a time, a
+type, and the on-screen and spoken text; and per description, an identifier and the text.
+Any dataset supplying those can be scored under its own column names.
 
-`FieldMap` is that translation, and it has one job beyond renaming: it makes the
-**lecture explicit**.
+`FieldMap` performs the translation. Beyond renaming, it makes the lecture explicit.
 
-That matters more than it sounds. The novelty term groups a system's descriptions by
-lecture, and it takes the lecture from the moment id by splitting on `#`. An id with no
-`#` splits to itself, so every moment becomes a lecture of its own, nothing can be seen
-to repeat, and the factor is 1 everywhere. The score stays plausible and the term has
-stopped working. That is not a hypothetical: the published reference rows carry a second
-identifier in the older namespace, and grouping by it turns 65 lectures into 1,574 and
-the mean factor from 0.9933 to exactly 1.
+The novelty term groups a system's descriptions by lecture, taking the lecture from the
+moment id by splitting on `#`. An id without `#` splits to itself, so every moment becomes
+its own lecture, no description can repeat another, and the factor is 1 throughout: scores
+stay in range and the term has no effect. Measured on the published reference rows, which
+carry a second identifier in the pre-regeneration namespace, grouping by that identifier
+gives 1,574 lectures instead of 65 and a mean factor of 1.0 instead of 0.9933.
 
-So a dataset says which column holds the lecture. If it does not, the lecture is parsed
-from the id and `assert_lectures_group` checks that the parse actually grouped anything,
-refusing rather than scoring with the term inert.
+A dataset therefore names the column holding the lecture. Without one the lecture is parsed
+from the id, and `assert_lectures_group` verifies that the parse grouped the moments.
 """
 
 from __future__ import annotations

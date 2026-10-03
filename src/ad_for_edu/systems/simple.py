@@ -1,9 +1,8 @@
-"""The systems that need no describer: the readout, and a writer of the references.
+"""The systems that need no describer: the slide-title readout and a reference writer.
 
-**The readout** answers every moment with the title of its slide. It writes nothing
-of its own: it copies what is already on screen, which is the thing the standard
-forbids most plainly. It is in the table as a floor, and what it scores says what a
-metric rewards when nothing has been described.
+The readout answers every moment with the title of its slide, copying what is already on
+screen. The standard forbids precisely that, so the readout serves as the table's floor:
+its score indicates what a metric rewards in the absence of any description.
 
 The title is taken as the first line of the slide text, or the first clause of it,
 so that the readout is a plausible-looking description rather than a page of text.

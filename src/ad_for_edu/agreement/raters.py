@@ -4,24 +4,22 @@ The measurement is per rater, over that rater's own choices. The raters differ i
 how often they call a pair equal, so a consensus label would answer a different
 question: it would keep the pairs they found easy and drop the rest.
 
-Three rules hold.
+Four rules govern the measurement.
 
-**A rater's ties are not choices.** A pair a rater called equal says nothing about
-which side they preferred, and is left out of that rater's cells.
+A rater's ties are excluded from that rater's cells: a pair called equal carries no
+information about which side the rater preferred.
 
-**A metric's ties are counted, not dropped silently.** A metric that gives both
-sides the same value did not agree or disagree, so the number of such pairs is
-reported beside the agreement.
+A metric's ties are counted and reported beside the agreement. A metric scoring both
+sides equally neither agreed nor disagreed, and the count of such pairs belongs in the
+output.
 
-**The pairs a judge could not order are their own row.** Those are the pairs a
-judge answered differently each way round, and averaging them into the rest would
-describe a different population. They are reported, never mixed in.
+Pairs a judge answered differently in the two presentation orders form their own row.
+Averaging them with the rest would describe a different population.
 
-**Raters are named by what a report calls them, not by who they are.** That is
-enforced rather than asked for: `checked_rater_names` refuses anything but a
-pseudonym, so a label file named after the person who produced it cannot put their
-name into a report, a table or a saved result. People who rate study material are
-study participants, and a pseudonym is the only identity this package will carry.
+Raters are identified by pseudonym. `checked_rater_names` rejects any other form, so a
+label file named after the person who produced it cannot place that name in a report, a
+table or a saved result. Raters are study participants; a pseudonym is the only identity
+this package carries for them.
 """
 
 from __future__ import annotations

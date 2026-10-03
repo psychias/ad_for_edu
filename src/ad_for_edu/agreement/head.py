@@ -1,24 +1,21 @@
-"""A small preference model fitted to the raters' own choices.
+"""A preference model fitted to the raters' choices.
 
-Every other scorer in the comparison was built before the raters were asked. This
-one is fitted to them, and is there to answer a different question: how much of the
-raters' agreement is reachable at all from the quantities the other scorers compute.
-It is a ceiling, not a rival, and it is only meaningful if it never sees the pair it
-is scored on.
+Every other scorer in the comparison predates the rating study. This one is fitted to it,
+and answers a different question: how much of the raters' agreement is reachable from the
+quantities the other scorers compute. It is an upper bound, and it holds only while the
+model never sees the pair it is scored on. Three properties enforce that.
 
-Three properties hold it to that, and each is enforced here rather than promised:
+Scoring is antisymmetric. A pair scores as `w . (f(a) - f(b))` with no intercept. An
+intercept would make the decision depend on which description was labelled `a`, so the same
+pair swapped could be preferred either way.
 
-*Antisymmetric scoring.* A pair is scored as `w . (f(a) - f(b))`, with no intercept.
-An intercept makes the decision depend on which description was called `a`, so the
-same pair swapped could be preferred both ways.
+Folds are disjoint by lecture rather than by pair. Two pairs from one lecture share a slide
+deck, a lecturer and often a moment, so splitting them across folds leaves the answer in the
+training half. Every pair is predicted by a fit that saw no pair from its lecture.
 
-*Folds that are disjoint by lecture, not by pair.* Two pairs of one lecture share a
-slide deck, a lecturer and often a moment, so a fold that splits them leaves the
-answer next door. Every pair is predicted by a fit that saw no pair of its lecture.
-
-*A rater held out entirely.* The fit pools the other raters; the held-out rater's
-labels are touched once, by weights already frozen. `freeze` and `score_frozen` are
-that path, and nothing in it can refit.
+One rater is held out entirely. The fit pools the remaining raters; the held-out labels are
+read once, against frozen weights. `freeze` and `score_frozen` are that path and cannot
+refit.
 """
 
 from __future__ import annotations

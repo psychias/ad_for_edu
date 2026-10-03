@@ -1,111 +1,51 @@
 # ad_for_edu
 
-Audio description for slide-based lecture recordings.
+Audio description for slide-based lecture recordings: detection of the moments that need
+describing, generation of candidate descriptions, preference data, post-training, and a
+rule-level evaluation metric.
 
-A blind or low-vision student following a recorded lecture hears the lecturer but not the
-slides. When the lecturer says "as you can see here", the sentence is about something the
-student cannot reach. Audio description fills those moments with speech, and a lecture
-recording makes that hard in a specific way: the description has to fit in a pause, must
-not repeat what the lecturer just said, and has to resolve what "here" pointed at.
+A recorded lecture gives a blind or low-vision student the lecturer's speech but not the
+slides, so a deictic reference such as "as you can see here" has no referent. An audio
+description supplies one, under three constraints specific to lectures: it must fit the
+available pause, avoid restating the lecturer, and name what was pointed at.
 
-This repository is the pipeline for building and measuring such descriptions. It finds the
-moments of a recording that need one, collects descriptions of them, pairs descriptions
-against each other to learn which is preferred, trains a model to write them, and scores
-the result against an explicit rule book rather than against a single opaque number.
+The repository holds code and configuration. It contains no recording, frame, transcript or
+rating. Commands read the corpus from a local data directory or from the Hub, and the
+dataset identifiers come from the environment with no defaults:
 
-It contains code and configuration only. No recording, frame, transcript or rating is in
-here: the corpus stays where it is licensed to be, and the commands read it from a data
-directory or from a dataset on the Hugging Face Hub. The published sets are
-`Psychias/AD4Edu-SFT` for the reference descriptions and training examples,
-`Psychias/AD4Edu-Preferences` for the pairs and the four hundred rated by people, and
-`Psychias/AD4Edu-keyframes` for the frames. Which set a command reads comes from the
-environment and has no default, so nothing is fetched that was not asked for.
-
-## What it does
-
-The pipeline has four parts, and each is a group of commands that can be run on its own.
-
-**Finding the moments.** A lecture recording is turned into a transcript, a list of the
-pauses in the speech, the text on each slide and a set of keyframes. Four detectors then
-propose moments: the slide changed, words appeared on the slide, the picture moved, the
-lecturer stopped talking. A vision model reads the keyframes around each proposal and
-either says what kind of moment it is or rejects it. Proposing generously and rejecting
-deliberately keeps the decision in one place, where it can be inspected.
-
-**Collecting descriptions.** Several models are asked to describe each moment, or to say
-that it needs no description. A writer sees the slide, the keyframes, the words spoken
-around the moment, the length of the pause it must fit, and what has already been
-described in that lecture, so that it does not say the same thing twice.
-
-**Preference pairs.** Two descriptions of one moment make a pair. A pair is ordered either
-by a judge that watches the clip, in both presentation orders so that a preference for a
-description is not a preference for a position, or by construction: a *controlled* pair is
-written to differ on exactly one rule category, so the better side is known without asking.
-The pairs train a model by direct preference optimisation and, separately, measure whether
-a scorer can tell the two sides apart.
-
-**Measuring.** The metric, **AD4Edu-Eval**, scores a description against a rule book of 45
-rules in six categories: style, terminology, length, deixis, faithfulness and
-non-redundancy. A score is the mean over the categories that apply to that moment, so a
-category that cannot apply abstains rather than scoring zero. The mean is multiplied by a
-novelty factor, which cuts a description that repeats an earlier one in the same lecture.
-The metric has three modes, reported apart and never mixed:
-
-| mode | what scores it | categories |
+| variable | dataset | contents |
 |---|---|---|
-| mechanical | rules alone, offline | style, terminology, length, deixis |
-| local | adds two local models | all six |
-| rubric | a hosted judge grades against the rule book | all six |
+| `AD_FOR_EDU_REFERENCES_DATASET` | `Psychias/AD4Edu-SFT` | reference descriptions, training examples |
+| `AD_FOR_EDU_PREFERENCES_DATASET` | `Psychias/AD4Edu-Preferences` | preference pairs, the 400 rated by people |
+| `AD_FOR_EDU_KEYFRAMES_DATASET` | `Psychias/AD4Edu-keyframes` | keyframes |
 
-Beside it the repository computes overlap with references, image–text alignment, win rates
-between two systems, per-category defect localisation, and how far each metric agrees with
-the people who rated pairs by hand.
+## Pipeline
 
-### Which rule a description breaks
+Three stages feed the evaluation described under [Metric](#metric). Each is a group of
+commands that runs independently.
 
-A score on its own says a description is worse without saying what is wrong with it.
-`ad-for-edu diagnose` answers that: per rule identifier, how many descriptions the rule
-applies to, how many broke it, and the worst offenders. The denominator is the rule's own,
-because a rule broken on three of four figures is a different finding from three of four
-hundred descriptions.
+### Moment detection
 
-Two columns, not one. Three of the six components count violations, so anything below full
-credit means one was found. The other three return a graded share of something a good
-description does anyway: one that names what the slide does not spell out scores below one
-on terminology and has broken no rule. The report keeps those apart, since merging them
-puts a reference writer at ninety-six per cent broken.
+Preprocessing yields a transcript, the pauses in the speech, the text on each slide, and
+keyframes. Four channels propose candidates: slide turnover, added slide text, pixel motion,
+and speech gaps. A vision model classifies each candidate by moment type or rejects it.
+Detection is permissive; the accept and reject decision sits in the classifier.
 
-It reports only the rules its mode tested. A mode that abstains on a category never
-checked that category's rules, so they are named as untested rather than listed as
-unbroken. The same holds for the standard's own routing: of the fourteen rules it marks
-mechanically checkable, five are scored in the mechanical mode, seven need a learned model
-and so are reachable only in the local mode, and two have no check here at all. The
-diagnostic names all three groups.
+### Description generation
 
-### Scoring someone else's dataset
+Several models describe each moment or decline to. Each writer receives the slide text, the
+keyframes, the transcript window, the pause length, and the descriptions already produced
+for earlier moments of the same lecture.
 
-The evaluation needs, per moment, an identifier, the lecture it belongs to, a time, a
-type, and the text on screen and spoken nearby; and per description, an identifier and the
-text. Any dataset that can supply those can be scored. Name its columns and nothing else
-changes:
+### Preference pairs
 
-```bash
-ad-for-edu diagnose --predictions theirs.jsonl --moments theirs_moments.jsonl \
-    --fields moment_id=id lecture=course time=start type=kind \
-             slide_text=ocr on_screen=screen transcript_window=said text=narration
-```
+Two descriptions of one moment form a pair. Natural pairs are ordered by a judge that
+watches the clip in both presentation orders, which separates a preference for a description
+from a preference for a position. Controlled pairs differ on one rule category by
+construction, so their direction needs no judge. Pairs are used for direct preference
+optimisation and to measure whether a scorer distinguishes the two sides.
 
-`--field-map a.yaml` takes the same mapping from a file, and `ad-for-edu evaluate` passes
-whichever you give to every stage, so one dataset is read one way throughout. Columns the
-mapping does not name are carried through untouched.
-
-One of those fields is load-bearing. The novelty term groups a system's descriptions by
-lecture, and with no lecture every moment is its own, nothing can be seen to repeat, and
-the term silently stops working while the scores stay plausible. So the lecture is checked
-rather than assumed: a dataset whose lecture cannot be found is refused, with the column to
-set named in the message.
-
-## Installing
+## Installation
 
 Python 3.10 or later.
 
@@ -116,36 +56,37 @@ python -m venv .venv && . .venv/bin/activate      # .venv\Scripts\activate on Wi
 pip install -e ".[dev]"
 ```
 
-The core install is small. Each heavy part is an extra, so a machine that only scores
-predictions does not need a training stack:
+The base install carries `pyyaml`, `numpy` and `scipy`. Heavier dependencies are extras, so
+a machine that only scores predictions needs no training stack:
 
-| extra | for |
+| extra | dependencies for |
 |---|---|
-| `preprocessing` | audio, transcription, slide text, keyframes (also needs `ffmpeg` on the path) |
-| `llm` | calling hosted models |
-| `metrics` | the local encoder and inference models, BERTScore, CLIPScore |
-| `train` | training and running a describer |
+| `preprocessing` | audio, transcription, slide text, keyframes (requires `ffmpeg` on the path) |
+| `llm` | hosted model providers |
+| `metrics` | local encoder and inference models, BERTScore, CLIPScore |
+| `train` | training and inference on a describer |
 | `data` | reading the datasets from the Hub |
-| `dev` | the tests and the linter |
+| `dev` | tests and linter |
 
-Then copy `.env.example` to `.env` and fill it in. Nothing in it has a default: a command
-that needs a variable and does not find it stops with a message naming the variable, rather
-than reading somewhere unintended.
+Copy `.env.example` to `.env` and complete it. No variable has a default; a command that
+requires an unset variable exits with the variable named.
 
 ```bash
 ad-for-edu --help
-ad-for-edu check-standard        # reads the rule book and renders every rule prompt
-ad-for-edu list-strategies       # the interchangeable parts, by family
+ad-for-edu check-standard        # parse the rule book, render every rule prompt
+ad-for-edu list-strategies       # interchangeable components, by family
 ```
 
-## Running it
+## Usage
 
-Two ways in. **From recordings** runs the whole chain and needs the lecture files. **From
-the datasets** starts at training or evaluation and needs no recording.
+Thirty-two commands behind one entry point; each accepts `--help`. Two entry paths: from
+recordings, which requires the lecture files, and from the published datasets, which starts
+at training or evaluation.
 
-From recordings, one lecture at a time. The steps that call a hosted model print an
-estimate and stop until `--approve-spend` is added, so this sequence run as it stands costs
-nothing and tells you what each step would cost:
+### From recordings
+
+One lecture at a time. Commands that call a hosted model print a cost estimate and exit
+without calling; the sequence below therefore costs nothing as written.
 
 ```bash
 ad-for-edu preprocess          --lectures my-lecture
@@ -158,7 +99,7 @@ ad-for-edu build-pairs         --candidates work/pairs/candidates/candidates.jso
 ad-for-edu judge-pairs         --pairs work/pairs/sets/pairs.jsonl
 ```
 
-From the datasets, to train and score:
+### Training and evaluation
 
 ```bash
 ad-for-edu build-training-examples
@@ -169,8 +110,7 @@ ad-for-edu score-systems --predictions work/evaluation/predictions_*.jsonl \
                          --metrics chrf compliance:mechanical compliance:local
 ```
 
-Or the whole evaluation in one invocation, which runs every table the inputs allow and
-writes one directory:
+`ad-for-edu evaluate` runs every table the supplied inputs permit and writes one directory:
 
 ```bash
 ad-for-edu evaluate --predictions work/evaluation/predictions_*.jsonl \
@@ -180,17 +120,14 @@ ad-for-edu evaluate --predictions work/evaluation/predictions_*.jsonl \
                     --offline
 ```
 
-It reports, per stage, whether it ran and what it wrote, and names the input any stage it
-skipped was missing, so a half-filled directory cannot be mistaken for a finished
-evaluation. Drop `--offline` to include the stages that call a judge; it then totals them
-into one estimate and stops until `--approve-spend` is given.
+Its summary records, per stage, whether the stage ran and what it wrote, and for each stage
+it skipped, the input that was absent. Without `--offline` it includes the judge-based
+stages, totals them into a single estimate, and exits until `--approve-spend` is passed.
 
-`ad-for-edu --help` lists all thirty-two commands; each takes `--help` of its own.
+### Cost control
 
-### Nothing is charged without being asked
-
-Every command that can call a hosted model prints what the work would cost, per row and
-per model, and stops:
+Every command that can call a hosted model prints the estimated cost per row and per model,
+then exits:
 
 ```
 $ ad-for-edu judge-pairs --pairs pairs.jsonl
@@ -204,17 +141,73 @@ SPEND ESTIMATE -- stage judge_pairs
   no --approve-spend: nothing was called. Re-run with the flag to spend.
 ```
 
-Passing `--approve-spend` makes the calls. This is not a convention each command keeps: the
-object that can make a call cannot be constructed without the token that asking produces,
-so a command that forgot to ask could not spend anything.
+`--approve-spend` permits the calls. The constraint is structural: `LLMClient.__init__`
+requires an approval token, and `require_approval` is the only source of one.
 
-## How it is put together
+## Metric
 
-Every step that has more than one reasonable implementation is a **strategy**: an abstract
-base with a registry beside it, and one registered class per way of doing it. A settings
-file names the one to use, a `build.py` turns that name into an object, and the code that
-uses it receives it in its constructor and never looks one up. So changing a detector, a
-judge, a training method or a component of the metric is a line of YAML.
+AD4Edu-Eval scores a description against a 45-rule standard across six categories: style,
+terminology, length, deixis, faithfulness, non-redundancy. The score is the unweighted mean
+over the categories applicable to the moment, so an inapplicable category abstains rather
+than contributing zero. A within-lecture novelty factor multiplies the mean and reduces a
+description that repeats an earlier one from the same system. Three modes, reported
+separately:
+
+| mode | scored by | categories |
+|---|---|---|
+| mechanical | rules only, offline | style, terminology, length, deixis |
+| local | adds two local models | all six |
+| rubric | hosted judge against the rule book | all six |
+
+Alongside it: reference overlap, image-text alignment, head-to-head win rates, per-category
+defect localisation, and agreement between each metric and each rater.
+
+### Rule diagnostics
+
+`ad-for-edu diagnose` attributes a score to rule identifiers. For each rule it reports the
+number of descriptions the rule applies to, the number that broke it, and the lowest-scoring
+examples. Denominators are per rule: three of four figures is not three of four hundred
+descriptions.
+
+Breaches and shortfalls occupy separate columns. Three of the six components count
+violations, so any score below 1 indicates at least one. The other three return a graded
+share of a property that a compliant description may lack: naming something absent from the
+slide text scores below 1 on terminology without breaking a rule. Reported as one column,
+that puts a reference writer at 96% broken.
+
+A mode reports only the rules its own components tested. Categories a mode abstains on are
+listed as untested, not as unbroken. The standard's routing differs from the modes in the
+same way: of the fourteen rules it marks mechanically checkable, five are scored by the
+mechanical mode, seven require a learned model and are reachable only in the local mode, and
+two have no implementation here. The diagnostic distinguishes all three groups.
+
+### Field mapping
+
+The evaluation requires, per moment, an identifier, a lecture, a time, a type, and the
+on-screen and spoken text; and per description, an identifier and the text. Any dataset
+supplying these can be scored by naming its columns:
+
+```bash
+ad-for-edu diagnose --predictions theirs.jsonl --moments theirs_moments.jsonl \
+    --fields moment_id=id lecture=course time=start type=kind \
+             slide_text=ocr on_screen=screen transcript_window=said text=narration
+```
+
+`--field-map a.yaml` supplies the same mapping from a file. `ad-for-edu evaluate` forwards
+whichever form it receives to every stage. Unmapped columns pass through unchanged.
+
+`lecture` is required. The novelty factor groups a system's descriptions by lecture; if each
+moment maps to a distinct lecture, no description can repeat another and the factor has no
+effect, while the scores stay in range. The reader verifies that the lecture field groups
+the moments and fails with the field name when it does not.
+
+## Architecture
+
+Each step with more than one reasonable implementation is a strategy: an abstract base, a
+registry beside it, and one registered class per implementation. A settings file names the
+implementation, a `build.py` resolves the name to an object, and the consuming code receives
+that object through its constructor. Changing a detector, a judge, a training method or a
+metric component is a settings change.
 
 ```yaml
 # configs/detection.yaml
@@ -228,50 +221,56 @@ frame_channels:
 gap_channel: speech_gap
 ```
 
-An unknown name fails at start-up and lists the names that exist. A misspelled settings key
-fails and lists the keys that exist. Neither is discovered halfway through a run.
+An unregistered name fails at start-up and lists the registered ones. An unrecognised
+settings key fails and lists the recognised ones. Both fail before any work begins.
 
-`ad-for-edu list-strategies` prints all of them. The families:
+`ad-for-edu list-strategies` prints every family:
 
 | group | families |
 |---|---|
-| finding moments | frame channel, gap channel, still policy, transcript window, rung policy |
-| preparing media | transcriber, speech gap detector, slide text reader |
-| asking a model | model provider, decoding attempt, salvage step, reference prompt, candidate mode |
+| moment detection | frame channel, gap channel, still policy, transcript window, rung policy |
+| media preparation | transcriber, speech gap detector, slide text reader |
+| model access | model provider, decoding attempt, salvage step, reference prompt, candidate mode |
 | pairs | controlled axis, order combination, pair decision rule |
 | judging | judge |
-| the metric | compliance component, sequence factor, metric |
+| metric | compliance component, sequence factor, metric |
 | training | training method, input arm, description system |
 | statistics | interval estimator, paired test, multiple-test correction, agreement coefficient |
 | data | dataset source, split policy, context source |
 
-### Layout
+### Package layout
 
 ```
 src/ad_for_edu/
-  core/           registries, settings, identifiers, timecodes, the spend gate, run records
-  data/           row schema, dataset sources, the lecture manifest, the split, media layout
-  standard/       the 45-rule book, which rules apply where, one prompt per rule
-  prompts/        the prompt texts, their placeholders, and what must bind before sending
-  llm/            requests, replies, the client, per-stage pricing, three providers
+  core/           registries, settings, identifiers, timecodes, spend gate, run records
+  data/           row schema, dataset sources, lecture manifest, split policy, field mapping
+  standard/       the 45-rule book, rule applicability, per-rule prompts
+  prompts/        prompt texts, placeholders, pre-send binding checks
+  llm/            requests, replies, client, per-stage pricing, three providers
   preprocessing/  audio, transcription, speech gaps, slide text, keyframes, cursor probe
-  moments/        detection channels, the detector, stills, windows, rungs, classification
-  references/     asking each writer to describe a moment or stay silent
-  pairs/          candidates, controlled axes, pairing, drawing sets, presentation orders
-  judges/         the ways a judge is asked, and the loop that asks
-  compliance/     the six components, the modes, the scorer, the novelty factor
-  metrics/        overlap, alignment, a judge's stored answers, compliance
-  training/       examples, input arms, backbones, the split, the two methods
-  inference/      how a describer is asked and how a reply is read
-  systems/        what a table compares: adapters, the untrained model, a readout, the writers
+  moments/        detection channels, detector, stills, windows, rungs, classification
+  references/     per-writer description generation
+  pairs/          candidates, controlled axes, pairing, set draws, presentation orders
+  judges/         judge forms and the loop that runs them
+  compliance/     six components, modes, scorer, novelty factor, rule attribution
+  metrics/        overlap, alignment, stored judge answers, compliance
+  training/       examples, input arms, backbones, split, SFT and DPO
+  inference/      decoding attempts, reply salvage, prediction rows
+  systems/        adapters, untrained model, slide-title readout, reference writers
   stats/          intervals, paired tests, corrections, agreement, power, rank correlation
-  evaluation/     the tables and the comparisons
-  agreement/      the raters against the metrics, and a small head fitted to their choices
-  cli/            one module per group of commands
+  evaluation/     tables and comparisons
+  agreement/      rater-metric agreement, fitted preference head
+  cli/            one module per command group
 ```
 
+## Privacy
+
+Raters are study participants. Reports identify them as R1, R2 and so on, and the
+rater-agreement commands reject a label file whose name is not a pseudonym; `--raters`
+supplies pseudonyms explicitly. Names, ages and fields of study are not published, and the
+ignore rules match by filename rather than by location.
 
 ## Licence
 
-Apache-2.0, see `LICENSE`. The rule book quotes short attributed passages from published
+Apache-2.0; see `LICENSE`. The rule book quotes short attributed passages from published
 accessibility guidelines; see `NOTICE`.
