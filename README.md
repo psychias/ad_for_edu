@@ -10,14 +10,15 @@ description supplies one, under three constraints specific to lectures: it must 
 available pause, avoid restating the lecturer, and name what was pointed at.
 
 The repository holds code and configuration. It contains no recording, frame, transcript or
-rating. Commands read the corpus from a local data directory or from the Hub, and the
-dataset identifiers come from the environment with no defaults:
+rating. Commands read the corpus from a local data directory or from the Hub. The dataset
+identifiers come from the environment and have no defaults; set them to the published
+datasets:
 
-| variable | dataset | contents |
+| variable | set to | contents |
 |---|---|---|
-| `AD_FOR_EDU_REFERENCES_DATASET` | `Psychias/AD4Edu-SFT` | reference descriptions, training examples |
-| `AD_FOR_EDU_PREFERENCES_DATASET` | `Psychias/AD4Edu-Preferences` | preference pairs, the 400 rated by people |
-| `AD_FOR_EDU_KEYFRAMES_DATASET` | `Psychias/AD4Edu-keyframes` | keyframes |
+| `AD_FOR_EDU_REFERENCES_DATASET` | `Hermeneia/AD4Edu-SFT` | reference descriptions, training examples |
+| `AD_FOR_EDU_PREFERENCES_DATASET` | `Hermeneia/AD4Edu-Preferences` | preference pairs, the 400 rated by people |
+| `AD_FOR_EDU_KEYFRAMES_DATASET` | `Hermeneia/AD4Edu-keyframes` | keyframes |
 
 ## Pipeline
 
@@ -44,6 +45,31 @@ watches the clip in both presentation orders, which separates a preference for a
 from a preference for a position. Controlled pairs differ on one rule category by
 construction, so their direction needs no judge. Pairs are used for direct preference
 optimisation and to measure whether a scorer distinguishes the two sides.
+
+## Released models and data
+
+### Models
+
+Describers post-trained from Qwen3-VL. The text-only arm sees the slide text and transcript
+but no keyframes; the multimodal arm also sees the keyframes.
+
+<!-- TODO: confirm the arm of the SFT models, and what "r3" stands for. -->
+
+| model | backbone | input arm | method |
+|---|---|---|---|
+| [`Hermeneia/ad4edu-qwen3vl-2b-sft`](https://huggingface.co/Hermeneia/ad4edu-qwen3vl-2b-sft) | Qwen3-VL 2B | multimodal | SFT |
+| [`Hermeneia/ad4edu-qwen3vl-8b-sft`](https://huggingface.co/Hermeneia/ad4edu-qwen3vl-8b-sft) | Qwen3-VL 8B | multimodal | SFT |
+| [`Hermeneia/ad4edu-qwen3vl-2b-r3-dpo`](https://huggingface.co/Hermeneia/ad4edu-qwen3vl-2b-r3-dpo) | Qwen3-VL 2B | multimodal | DPO (r3) |
+| [`Hermeneia/ad4edu-qwen3vl-2b-textonly-r3-dpo`](https://huggingface.co/Hermeneia/ad4edu-qwen3vl-2b-textonly-r3-dpo) | Qwen3-VL 2B | text-only | DPO (r3) |
+| [`Hermeneia/ad4edu-qwen3vl-8b-textonly-r3-dpo`](https://huggingface.co/Hermeneia/ad4edu-qwen3vl-8b-textonly-r3-dpo) | Qwen3-VL 8B | text-only | DPO (r3) |
+
+### Datasets
+
+| dataset | contents |
+|---|---|
+| [`Hermeneia/AD4Edu-SFT`](https://huggingface.co/datasets/Hermeneia/AD4Edu-SFT) | reference descriptions, training examples |
+| [`Hermeneia/AD4Edu-Preferences`](https://huggingface.co/datasets/Hermeneia/AD4Edu-Preferences) | preference pairs, including the 400 rated by people |
+| [`Hermeneia/AD4Edu-keyframes`](https://huggingface.co/datasets/Hermeneia/AD4Edu-keyframes) | keyframes |
 
 ## Installation
 
