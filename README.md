@@ -48,6 +48,10 @@ optimisation and to measure whether a scorer distinguishes the two sides.
 
 ## Released models and data
 
+All resources are publicly available: the models and datasets on Hugging Face, the code
+base in this repository, and the tools of the study with blind and low-vision (BLV)
+participants in repositories of their own.
+
 ### Models
 
 Describers post-trained from Qwen3-VL. The text-only arm sees the slide text and transcript
@@ -71,12 +75,20 @@ but no keyframes; the multimodal arm also sees the keyframes.
 | [`Hermeneia/AD4Edu-Preferences`](https://huggingface.co/datasets/Hermeneia/AD4Edu-Preferences) | preference pairs, including the 400 rated by people |
 | [`Hermeneia/AD4Edu-keyframes`](https://huggingface.co/datasets/Hermeneia/AD4Edu-keyframes) | keyframes |
 
+### Related repositories
+
+| repository | contents |
+|---|---|
+| [`psychias/ad_for_edu`](https://github.com/psychias/ad_for_edu) | this code base |
+| [`psychias/blv_annotation_tool`](https://github.com/psychias/blv_annotation_tool) | screen-reader-native annotation tool used in the BLV study |
+| [`psychias/blv_mediaplayer`](https://github.com/psychias/blv_mediaplayer) | lecture player that delivers descriptions at their moments |
+
 ## Installation
 
 Python 3.10 or later.
 
 ```bash
-git clone <this repository>
+git clone https://github.com/psychias/ad_for_edu.git
 cd ad_for_edu
 python -m venv .venv && . .venv/bin/activate      # .venv\Scripts\activate on Windows
 pip install -e ".[dev]"
