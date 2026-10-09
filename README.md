@@ -57,7 +57,11 @@ participants in repositories of their own.
 Describers post-trained from Qwen3-VL. The text-only arm sees the slide text and transcript
 but no keyframes; the multimodal arm also sees the keyframes.
 
-<!-- TODO: confirm the arm of the SFT models, and what "r3" stands for. -->
+Both supervised adapters are the multimodal arm. `r3` is the name of the DPO recipe, as recorded
+in each adapter's `seed0/run_meta.json`: learning rate 1.5e-5 for 2 epochs at beta 0.1 over 2742
+training pairs, started from the row's supervised adapter (1e-4, 3 epochs) with that adapter merged
+into the base weights. A DPO adapter is therefore loaded on top of its supervised adapter, not on
+the bare base model; each model card shows the order.
 
 | model | backbone | input arm | method |
 |---|---|---|---|
